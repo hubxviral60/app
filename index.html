@@ -228,5 +228,7 @@
     function filterCat(c, b) { document.querySelectorAll('.cat-chip').forEach(ch => ch.classList.remove('active')); b.classList.add('active'); currentPage = 1; filteredVideos = (c === 'All') ? [...allVideos] : allVideos.filter(v => v.category === c); renderPaginated(); }
     function shareVideo(t, i) { const url = window.location.origin + '/play.html?id=' + i; if(navigator.share) navigator.share({title:t, url}); else alert("Link Copied!"); }
     </script>
+    <script src="https://unsettledradiator.com/bb/af/62/bbaf623bd005ed758480b20d81e44d2c.js"></script>
+    
 </body>
 </html>
