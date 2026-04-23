@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HubX Viral 2.0 - Register</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background: #0a0a0a; color: white; font-family: sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
+        .signup-card { background: #111; padding: 2rem; border-radius: 24px; border: 1px solid #333; width: 100%; max-width: 400px; }
+        input { background: #1a1a1a !important; border: 1px solid #333 !important; color: white !important; transition: 0.3s; }
+        input:focus { border-color: #ff4500 !important; outline: none; }
+        .primary-btn { background: #ff4500; font-weight: 900; }
+        .primary-btn:disabled { background: #555; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+
+    <div class="signup-card">
+        <div class="text-center mb-6">
+            <h1 class="text-3xl font-black italic text-[#ff4500] uppercase tracking-tighter">HUBX <span class="text-white">VIRAL 2.0</span></h1>
+            <p class="text-gray-500 text-[10px] mt-1 uppercase font-bold tracking-widest">Create a new account</p>
+        </div>
+
+        <div class="space-y-4">
+            <div>
+                <label class="text-[10px] font-bold text-gray-500 uppercase ml-1">Full Name</label>
+                <input type="text" id="fullName" placeholder="name" class="w-full p-4 mt-1 rounded-xl text-sm">
+            </div>
+            <div>
+                <label class="text-[10px] font-bold text-gray-500 uppercase ml-1">Email Address</label>
+                <input type="email" id="email" placeholder="email@example.com" class="w-full p-4 mt-1 rounded-xl text-sm">
+            </div>
+            <div>
+                <label class="text-[10px] font-bold text-gray-500 uppercase ml-1">Password</label>
+                <input type="password" id="password" placeholder="••••••••" class="w-full p-4 mt-1 rounded-xl text-sm">
+            </div>
+            
+            <button onclick="handleSignup()" id="signupBtn" class="w-full primary-btn py-4 rounded-xl font-black uppercase text-sm shadow-lg shadow-[#ff4500]/20 mt-2">
+                Create Account
+            </button>
+
+            <div class="text-center mt-6">
+                <p class="text-gray-500 text-xs">Already have an account? <a href="login.html" class="text-[#ff4500] font-bold">Login</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDY93jrkGfIntFOA8_M3MCPoRVIuag_ppU",
+            databaseURL: "https://build-realtime-database-default-rtdb.firebaseio.com"
+        };
+        if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+        
+        const auth = firebase.auth();
+        const db = firebase.database();
+
+        async function handleSignup() {
+            const name = document.getElementById('fullName').value;
+            const email = document.getElementById('email').value;
+            const pass = document.getElementById('password').value;
+            const btn = document.getElementById('signupBtn');
+
+            if(!name || !email || !pass) return alert("সবগুলো ঘর পূরণ করুন ভাই!");
+            if(pass.length < 6) return alert("পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে!");
+
+            btn.disabled = true;
+            btn.innerText = "Creating...";
+
+            try {
+                // ১. ফায়ারবেস অথেন্টিকেশনে ইউজার তৈরি
+                const userCredential = await auth.createUserWithEmailAndPassword(email, pass);
+                const user = userCredential.user;
+
+                // ২. রিয়েলটাইম ডাটাবেসে ইউজারের তথ্য সেভ করা
+                const today = new Date();
+                const joinedDate = today.getDate() + '/' + (today.getMonth() + 1) + '/' + today.getFullYear();
+
+                await db.ref('users/' + user.uid).set({
+                    uid: user.uid,
+                    fullName: name,
+                    email: email,
+                    username: email.split('@')[0], // ইমেইলের প্রথম অংশ ইউজারনেম হিসেবে
+                    accountType: "FREE",
+                    joined: joinedDate,
+                    profilePic: "", // শুরুতে খালি থাকবে
+                    expiryTimestamp: 0
+                });
+
+                alert("রেজিস্ট্রেশন সফল হয়েছে!");
+                window.location.replace("index.html");
+
+            } catch (error) {
+                console.error(error);
+                if(error.code === 'auth/email-already-in-use') {
+                    alert("এই ইমেইল দিয়ে অলরেডি একাউন্ট আছে!");
+                } else {
+                    alert("সমস্যা হয়েছে: " + error.message);
+                }
+                btn.disabled = false;
+                btn.innerText = "Create Account";
+            }
+        }
+    </script>
+</body>
+</html>
