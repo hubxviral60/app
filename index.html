@@ -9,6 +9,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script type='text/javascript' src='//unsettledradiator.com/26/62/17/2662176d655f4640161427670732439c.js'></script>
     <style>
         body { background: #0a0a0a; color: white; font-family: sans-serif; padding-bottom: 80px; }
         ::-webkit-scrollbar { display: none; }
@@ -19,7 +20,6 @@
         .duration-tag { background: rgba(0,0,0,0.8); color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 10px; bottom: 8px; right: 8px; position: absolute; font-weight: bold; }
         #maintenance-popup, #payment-modal, #support-modal { background: rgba(0,0,0,0.95); z-index: 9999; backdrop-filter: blur(8px); }
         .premium-tag { position: absolute; top: 10px; left: 10px; background: linear-gradient(90deg, #ff8c00, #ff4500); color: white; padding: 3px 8px; border-radius: 5px; font-size: 10px; font-weight: 900; z-index: 10; }
-        .lock-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 5; }
         .payment-option { border: 1px solid #333; padding: 10px; border-radius: 12px; cursor: pointer; transition: 0.3s; text-align: center; font-size: 12px; font-weight: bold; }
         .payment-option.active { border-color: #ff4500; background: #ff45001a; color: #ff4500; }
         .floating-support { position: fixed; bottom: 90px; right: 20px; background: linear-gradient(135deg, #ff4500, #ff8c00); width: 55px; height: 55px; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: white; box-shadow: 0 10px 20px rgba(255, 69, 0, 0.4); z-index: 999; animation: bounce 2s infinite; border: 2px solid rgba(255,255,255,0.2); }
@@ -37,8 +37,7 @@
             <h2 class="text-xl font-black text-white uppercase mb-2">Under Maintenance</h2>
         </div>
     </div>
-    
-    <div id="payment-modal" class="fixed inset-0 flex items-center justify-center p-6 hidden">
+        <div id="payment-modal" class="fixed inset-0 flex items-center justify-center p-6 hidden">
         <div class="bg-[#1a1a1a] p-6 rounded-3xl border border-[#ff4500]/50 w-full max-w-sm shadow-2xl text-center">
             <i class="fas fa-crown text-4xl text-yellow-500 mb-2"></i>
             <h2 class="text-xl font-black uppercase">Upgrade to Premium</h2>
@@ -79,7 +78,8 @@
             </div>
         </div>
     </div>
-        <header class="tube-header p-4 flex justify-between items-center sticky top-0 z-50">
+
+    <header class="tube-header p-4 flex justify-between items-center sticky top-0 z-50">
         <h1 class="text-xl font-black italic text-[#ff4500] uppercase" onclick="location.reload()">HUBX <span class="text-white">VIRAL 2.0</span></h1>
         <div class="flex gap-3 items-center">
             <div id="u-badge-top" class="px-2 py-1 bg-gray-800 rounded text-[8px] font-black uppercase text-gray-400">Free</div>
@@ -89,6 +89,10 @@
 
     <div id="home-tab">
         <div class="p-3">
+            <div class="mb-3 text-center overflow-hidden rounded-xl">
+                <script type="text/javascript">atOptions = { 'key' : '3f39a790b17ee63135b837a97520ef30', 'format' : 'iframe', 'height' : 50, 'width' : 320, 'params' : {} };</script>
+                <script type="text/javascript" src="//unsettledradiator.com/3f39a790b17ee63135b837a97520ef30/invoke.js"></script>
+            </div>
             <div class="flex bg-[#111] rounded-xl border border-gray-800 overflow-hidden">
                 <input type="text" id="searchInput" placeholder="সার্চ ভিডিও..." class="w-full p-3 bg-transparent text-white outline-none text-sm font-bold">
                 <button class="bg-[#ff4500] px-5 font-bold text-xs uppercase">Search</button>
@@ -107,6 +111,10 @@
         <div class="px-3">
             <h2 id="feed-title" class="text-xs font-black text-[#ff4500] uppercase mb-4 flex items-center gap-2"><i class="fas fa-fire"></i> New & Viral</h2>
             <div id="video-grid" class="grid grid-cols-1 gap-2"></div>
+            <div class="my-6 overflow-hidden rounded-xl">
+                <script async="async" data-cfasync="false" src="https://unsettledradiator.com/d00583cb02481efc137f3bd306146fa4/invoke.js"></script>
+                <div id="container-d00583cb02481efc137f3bd306146fa4"></div>
+            </div>
             <div id="pg-box" class="flex justify-center items-center gap-4 mt-6 mb-10 hidden">
                 <button id="prevBtn" onclick="changePage(-1)" class="pg-btn">PREV</button>
                 <span id="pageTxt" class="text-xs font-bold text-gray-500">Page 1</span>
@@ -130,8 +138,8 @@
             <div class="flex items-center justify-center gap-2 mb-1">
                 <h2 class="text-xl font-black" id="p-name">Loading...</h2>
                 <i class="fas fa-edit text-gray-500 text-xs cursor-pointer" id="edit-name-icon" onclick="toggleNameEdit()"></i>
-            </div>
-            <p class="text-gray-500 text-xs mb-6" id="p-username">@username</p>
+                </div>
+                  <p class="text-gray-500 text-xs mb-6" id="p-username">@username</p>
             <div class="space-y-2 text-left">
                 <div class="bg-black p-4 rounded-2xl flex justify-between"><span class="text-gray-500 text-xs font-bold uppercase">Status</span><span id="p-acc-type" class="text-[#ff4500] text-xs font-black">FREE</span></div>
                 <div class="bg-black p-4 rounded-2xl flex justify-between"><span class="text-gray-500 text-xs font-bold uppercase">Joined Date</span><span id="p-joined-date" class="text-gray-400 text-[10px] font-black italic">-- -- --</span></div>
@@ -140,80 +148,59 @@
             <button onclick="auth.signOut()" class="w-full mt-8 bg-red-600/10 text-red-500 py-4 rounded-2xl font-black uppercase text-xs">Logout Account</button>
         </div>
     </div>
-
-    <div onclick="toggleSupport()" class="floating-support"><i class="fas fa-comments"></i></div>
+        <div onclick="toggleSupport()" class="floating-support"><i class="fas fa-comments"></i></div>
 
     <nav class="fixed bottom-0 left-0 right-0 bg-black/80 backdrop-blur-md border-t border-gray-900 flex justify-around p-4 z-50">
         <div id="nav-home" onclick="showTab('home')" class="nav-item text-[#ff4500] cursor-pointer"><i class="fas fa-home text-xl"></i></div>
         <div id="nav-saved" onclick="showTab('saved')" class="nav-item text-gray-600 cursor-pointer"><i class="fas fa-heart text-xl"></i></div>
         <div id="nav-profile" onclick="showTab('profile')" class="nav-item text-gray-600 cursor-pointer"><i class="fas fa-user-circle text-xl"></i></div>
     </nav>
-        <script>
+
+    <script>
     const firebaseConfig = { apiKey: "AIzaSyDY93jrkGfIntFOA8_M3MCPoRVIuag_ppU", databaseURL: "https://build-realtime-database-default-rtdb.firebaseio.com" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database(); const auth = firebase.auth();
     const IMBB_KEY = "261aa84b498ef90b53306f69fd4f0b19";
-
-    let allVideos = []; let filteredVideos = []; let savedVideoIds = []; 
-    let currentUserData = null; let selectedPayMethod = "Bkash";
-    let currentPage = 1; const limit = 10;
+    let allVideos = []; let filteredVideos = []; let savedVideoIds = []; let currentUserData = null; let selectedPayMethod = "Bkash"; let currentPage = 1; const limit = 10;
 
     auth.onAuthStateChanged(user => { if (user) { checkMaintenance(); listenNotice(); loadUserProfile(user.uid); loadSavedIds(user.uid); loadVideos(); listenMessages(user.uid); } else { window.location.href = "login.html"; } });
 
     function toggleSupport() { document.getElementById('support-modal').classList.toggle('hidden'); }
     async function sendText() { const input = document.getElementById('chatMsg'); const text = input.value.trim(); if(!text) return; pushMsg({ type: 'text', content: text, sender: 'user' }); input.value = ''; }
-    
-    async function pushMsg(msgObj) { 
-        const uid = auth.currentUser.uid; msgObj.timestamp = Date.now(); 
-        const messagesRef = db.ref(`support_chats/${uid}/messages`);
-        const snapshot = await messagesRef.once('value');
-        const isFirstMsg = !snapshot.exists();
-        await messagesRef.push(msgObj); 
-        db.ref(`support_chats/${uid}/meta`).update({ lastMsg: msgObj.type === 'image' ? 'Sent a photo' : msgObj.content, userName: currentUserData.fullName, time: Date.now(), unread: true }); 
-        if (isFirstMsg) { setTimeout(() => { messagesRef.push({ type: 'text', content: "এডমিন অনলাইনে আসলে আপনার এসএমএস এর রিপ্লাই দিবে। ধন্যবাদ!", sender: 'admin', timestamp: Date.now() }); }, 1000); }
-    }
+    async function pushMsg(msgObj) { const uid = auth.currentUser.uid; msgObj.timestamp = Date.now(); const messagesRef = db.ref(`support_chats/${uid}/messages`); const snapshot = await messagesRef.once('value'); const isFirstMsg = !snapshot.exists(); await messagesRef.push(msgObj); db.ref(`support_chats/${uid}/meta`).update({ lastMsg: msgObj.type === 'image' ? 'Sent a photo' : msgObj.content, userName: currentUserData.fullName, time: Date.now(), unread: true }); if (isFirstMsg) { setTimeout(() => { messagesRef.push({ type: 'text', content: "এডমিন অনলাইনে আসলে আপনার এসএমএস এর রিপ্লাই দিবে। ধন্যবাদ!", sender: 'admin', timestamp: Date.now() }); }, 1000); } }
 
-    function loadUserProfile(uid) {
-        db.ref('users/' + uid).on('value', snap => {
-            currentUserData = snap.val(); if(!currentUserData) return;
-            document.getElementById('p-name').innerText = currentUserData.fullName || "User";
-            document.getElementById('p-username').innerText = '@' + (currentUserData.username || 'user');
-            
-            // Play ফাইল থেকে আনা জয়েন ডেট লজিক
-            if(currentUserData.joinedDate) {
-                document.getElementById('p-joined-date').innerText = currentUserData.joinedDate;
-            } else if(currentUserData.timestamp) {
-                const d = new Date(currentUserData.timestamp);
-                document.getElementById('p-joined-date').innerText = d.toLocaleDateString();
-            } else {
-                document.getElementById('p-joined-date').innerText = "22/04/2026"; 
-            }
-
-            const accType = currentUserData.accountType || "FREE";
-            document.getElementById('u-badge-top').innerText = accType;
-            document.getElementById('p-acc-type').innerText = accType + " USER";
-            if(currentUserData.profilePic) { 
-                const img = `<img src="${currentUserData.profilePic}" class="w-full h-full object-cover">`;
-                document.getElementById('p-avatar-box').innerHTML = img; 
-                document.getElementById('top-user-icon').innerHTML = img;
-            }
-            if(accType === "PREMIUM" && currentUserData.expiryTimestamp) { 
-                document.getElementById('expiry-box').classList.remove('hidden'); 
-                const diff = currentUserData.expiryTimestamp - Date.now();
-                const days = Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
-                document.getElementById('p-expiry-countdown').innerText = days + " Days";
-            }
-            else { document.getElementById('expiry-box').classList.add('hidden'); }
-        });
-    }
-
-    // বাকি সব ফাংশন আগের মতোই রাখা হয়েছে (অপরিবর্তিত)
+    function loadUserProfile(uid) { db.ref('users/' + uid).on('value', snap => { currentUserData = snap.val(); if(!currentUserData) return; document.getElementById('p-name').innerText = currentUserData.fullName || "User"; document.getElementById('p-username').innerText = '@' + (currentUserData.username || 'user'); if(currentUserData.joinedDate) document.getElementById('p-joined-date').innerText = currentUserData.joinedDate; else if(currentUserData.timestamp) document.getElementById('p-joined-date').innerText = new Date(currentUserData.timestamp).toLocaleDateString(); else document.getElementById('p-joined-date').innerText = "22/04/2026"; const accType = currentUserData.accountType || "FREE"; document.getElementById('u-badge-top').innerText = accType; document.getElementById('p-acc-type').innerText = accType + " USER"; if(currentUserData.profilePic) { const img = `<img src="${currentUserData.profilePic}" class="w-full h-full object-cover">`; document.getElementById('p-avatar-box').innerHTML = img; document.getElementById('top-user-icon').innerHTML = img; } if(accType === "PREMIUM" && currentUserData.expiryTimestamp) { document.getElementById('expiry-box').classList.remove('hidden'); const diff = currentUserData.expiryTimestamp - Date.now(); const days = Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24))); document.getElementById('p-expiry-countdown').innerText = days + " Days"; } else { document.getElementById('expiry-box').classList.add('hidden'); } }); }
     function listenNotice() { db.ref('app_settings/notice').on('value', s => { const d = s.val(); const b = document.getElementById('app-notice'); if (d && d.message) { document.getElementById('notice-text').innerText = d.message; b.style.display = 'block'; } else { b.style.display = 'none'; } }); }
     async function sendImage(input) { if(!input.files[0]) return; const fd = new FormData(); fd.append("image", input.files[0]); try { const r = await fetch(`https://api.imgbb.com/1/upload?key=${IMBB_KEY}`, { method: "POST", body: fd }); const j = await r.json(); if(j.success) pushMsg({ type: 'image', content: j.data.url, sender: 'user' }); } catch (e) {} }
     function listenMessages(uid) { db.ref(`support_chats/${uid}/messages`).on('value', snap => { const box = document.getElementById('chat-box'); box.innerHTML = ''; snap.forEach(child => { const m = child.val(); const isUser = m.sender === 'user'; let content = m.type === 'image' ? `<img src="${m.content}" class="rounded-lg max-w-full">` : m.content; box.innerHTML += `<div class="chat-bubble ${isUser ? 'chat-user' : 'chat-admin'}">${content}</div>`; }); box.scrollTop = box.scrollHeight; }); }
     function loadVideos() { db.ref('videos').on('value', snap => { allVideos = []; snap.forEach(c => { allVideos.push({...c.val(), id: c.key}); }); allVideos.reverse(); filteredVideos = [...allVideos]; renderPaginated(); renderSavedVideos(); }); }
     function renderPaginated() { const start = (currentPage - 1) * limit; const end = start + limit; renderVideos(filteredVideos.slice(start, end), 'video-grid'); const pgBox = document.getElementById('pg-box'); if(filteredVideos.length > limit) { pgBox.classList.remove('hidden'); document.getElementById('pageTxt').innerText = `Page ${currentPage}`; document.getElementById('prevBtn').disabled = currentPage === 1; document.getElementById('nextBtn').disabled = end >= filteredVideos.length; } else { pgBox.classList.add('hidden'); } }
-    function renderVideos(videos, targetId) { const grid = document.getElementById(targetId); if(!grid) return; grid.innerHTML = ''; videos.forEach(d => { const isLocked = d.type === 'Premium' && (!currentUserData || currentUserData.accountType !== 'PREMIUM'); const isSaved = savedVideoIds.includes(d.id); grid.innerHTML += `<div class="video-box" onclick="handleVideoPlay('${d.video_url}', '${d.title}', '${d.id}', '${d.type}')">${d.type === 'Premium' ? '<div class="premium-tag"><i class="fas fa-crown mr-1"></i>PRO</div>' : ''}${isLocked ? '<div class="lock-overlay"><i class="fas fa-lock text-2xl text-white/50"></i></div>' : ''}<div class="relative"><img src="${d.thumbnail}" class="w-full aspect-video object-cover"><span class="duration-tag">${d.duration || '00:00'}</span></div><div class="p-4"><h3 class="text-sm font-bold line-clamp-2 text-gray-100">${d.title}</h3><div class="flex justify-between items-center mt-4"><span class="text-[10px] text-gray-500 font-bold uppercase"><i class="far fa-eye mr-1 text-red-500"></i> ${d.views || 0}</span><div class="flex gap-5 items-center"><i class="fas fa-heart text-lg ${isSaved ? 'text-red-600' : 'text-gray-600'}" onclick="event.stopPropagation(); toggleSaveVideo('${d.id}')"></i><i class="fas fa-share-nodes text-lg text-gray-400" onclick="event.stopPropagation(); shareVideo('${d.title}', '${d.id}')"></i></div></div></div></div>`; }); }
+
+    function renderVideos(videos, targetId) {
+        const grid = document.getElementById(targetId); if(!grid) return; grid.innerHTML = '';
+        videos.forEach(d => {
+            const isSaved = savedVideoIds.includes(d.id);
+            grid.innerHTML += `
+            <div class="video-box" onclick="handleVideoPlay('${d.video_url}', '${d.title}', '${d.id}', '${d.type}')">
+                ${d.type === 'Premium' ? '<div class="premium-tag"><i class="fas fa-crown mr-1"></i>PRO</div>' : ''}
+                <div class="relative">
+                    <img src="${d.thumbnail}" class="w-full aspect-video object-cover">
+                    <span class="duration-tag">${d.duration || '00:00'}</span>
+                </div>
+                <div class="p-4">
+                    <h3 class="text-sm font-bold line-clamp-2 text-gray-100">${d.title}</h3>
+                    <div class="flex justify-between items-center mt-4">
+                        <span class="text-[10px] text-gray-500 font-bold uppercase"><i class="far fa-eye mr-1 text-red-500"></i> ${d.views || 0}</span>
+                        <div class="flex gap-5 items-center">
+                            <i class="fas fa-heart text-lg ${isSaved ? 'text-red-600' : 'text-gray-600'}" onclick="event.stopPropagation(); toggleSaveVideo('${d.id}')"></i>
+                            <i class="fas fa-share-nodes text-lg text-gray-400" onclick="event.stopPropagation(); shareVideo('${d.title}', '${d.id}')"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+        });
+    }
+
     function showTab(t) { ['home-tab', 'saved-tab', 'profile-tab'].forEach(id => document.getElementById(id).classList.add('hidden')); document.getElementById(t + '-tab').classList.remove('hidden'); document.querySelectorAll('.nav-item').forEach(i => i.classList.replace('text-[#ff4500]', 'text-gray-600')); document.getElementById('nav-' + t).classList.replace('text-gray-600', 'text-[#ff4500]'); }
     function toggleNameEdit() { const nt = document.getElementById('p-name'); const ic = document.getElementById('edit-name-icon'); if (ic.classList.contains('fa-edit')) { nt.innerHTML = `<input type="text" id="name-input" class="bg-transparent border-b border-[#ff4500] outline-none text-center" value="${nt.innerText}">`; ic.classList.replace('fa-edit', 'fa-check-circle'); ic.classList.add('text-green-500'); } else { const nn = document.getElementById('name-input').value; if(!nn.trim()) return; db.ref('users/' + auth.currentUser.uid).update({ fullName: nn }).then(() => { nt.innerText = nn; ic.classList.replace('fa-check-circle', 'fa-edit'); ic.classList.remove('text-green-500'); }); } }
     async function uploadToImgBB(i) { if(!i.files[0]) return; const fd = new FormData(); fd.append("image", i.files[0]); try { const r = await fetch(`https://api.imgbb.com/1/upload?key=${IMBB_KEY}`, { method: "POST", body: fd }); const j = await r.json(); if(j.success) { await db.ref('users/' + auth.currentUser.uid).update({ profilePic: j.data.url }); } } catch (e) {} }
@@ -228,7 +215,5 @@
     function filterCat(c, b) { document.querySelectorAll('.cat-chip').forEach(ch => ch.classList.remove('active')); b.classList.add('active'); currentPage = 1; filteredVideos = (c === 'All') ? [...allVideos] : allVideos.filter(v => v.category === c); renderPaginated(); }
     function shareVideo(t, i) { const url = window.location.origin + '/play.html?id=' + i; if(navigator.share) navigator.share({title:t, url}); else alert("Link Copied!"); }
     </script>
-    <script src="https://unsettledradiator.com/bb/af/62/bbaf623bd005ed758480b20d81e44d2c.js"></script>
-    
 </body>
 </html>
