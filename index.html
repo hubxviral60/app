@@ -40,7 +40,7 @@
     </div>
     
     <div id="payment-modal" class="fixed inset-0 flex items-center justify-center p-6 hidden">
-        <div class="bg-[#1a1a1a] p-6 rounded-3xl border border-[#ff4500]/50 w-full max-w-sm shadow-2xl text-center">
+        <div class="bg-[#1a1a1a] p-6 rounded-3xl border border-[#ff4500]/50 w-full max-sm shadow-2xl text-center">
             <i class="fas fa-crown text-4xl text-yellow-500 mb-2"></i>
             <h2 class="text-xl font-black uppercase">Upgrade to Premium</h2>
             <div class="grid grid-cols-3 gap-2 my-4">
@@ -74,7 +74,8 @@
             </div>
         </div>
     </div>
-        <header class="tube-header p-4 flex justify-between items-center sticky top-0 z-50">
+
+    <header class="tube-header p-4 flex justify-between items-center sticky top-0 z-50">
         <h1 class="text-xl font-black italic text-[#ff4500] uppercase" onclick="location.reload()">HUBX <span class="text-white">VIRAL 2.0</span></h1>
         <div class="flex gap-3 items-center">
             <div id="u-badge-top" class="px-2 py-1 bg-gray-800 rounded text-[8px] font-black uppercase text-gray-400">Free</div>
@@ -114,7 +115,7 @@
                 <button id="nextBtn" onclick="changePage(1)" class="pg-btn">NEXT</button>
             </div>
         </div>
-    </div>
+  </div>
 
     <div id="saved-tab" class="hidden p-4">
         <h2 class="text-xs font-black text-[#ff4500] uppercase mb-4 flex items-center gap-2"><i class="fas fa-heart"></i> Saved Library</h2>
@@ -143,9 +144,8 @@
                     <input type="text" id="ref-link" readonly class="flex-1 bg-black border border-gray-800 rounded-lg p-2 text-[10px] text-gray-400 outline-none">
                     <button onclick="copyRef()" class="bg-green-600 px-4 rounded-lg text-[10px] font-black uppercase">Copy</button>
                 </div>
-            </div>
-
-            <div class="space-y-2 text-left">
+        </div>
+        <div class="space-y-2 text-left">
                 <div class="bg-black p-4 rounded-2xl flex justify-between"><span class="text-gray-500 text-xs font-bold uppercase">Status</span><span id="p-acc-type" class="text-[#ff4500] text-xs font-black">FREE</span></div>
                 <div class="bg-black p-4 rounded-2xl flex justify-between"><span class="text-gray-500 text-xs font-bold uppercase">Joined Date</span><span id="p-joined-date" class="text-gray-400 text-[10px] font-black italic">-- -- --</span></div>
                 <div id="expiry-box" class="hidden bg-yellow-500/10 p-4 rounded-2xl flex justify-between border border-yellow-500/20"><span class="text-yellow-500 text-xs font-bold uppercase">Ends In</span><span id="p-expiry-countdown" class="text-yellow-500 text-xs font-black">--</span></div>
@@ -175,10 +175,12 @@
             
             document.getElementById('p-name').innerText = currentUserData.fullName || "User"; 
             document.getElementById('p-username').innerText = '@' + (currentUserData.username || 'user');
-            document.getElementById('ref-link').value = window.location.origin + "/signup.html?ref=" + uid;
+            
+            // --- UPDATED REFERRAL LINK FORMAT ---
+            document.getElementById('ref-link').value = window.location.origin + "/app/signup.html?ref=" + uid;
+            
             document.getElementById('p-ref-count').innerText = currentUserData.referralCount || 0;
 
-            // Updated Date Logic for better compatibility
             if(currentUserData.joinedDate) {
                 document.getElementById('p-joined-date').innerText = currentUserData.joinedDate;
             } else if(currentUserData.timestamp) {
@@ -186,7 +188,7 @@
                 const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
                 document.getElementById('p-joined-date').innerText = date.toLocaleDateString('en-GB', options);
             } else {
-                document.getElementById('p-joined-date').innerText = "22/04/2026"; // Default/Fallback
+                document.getElementById('p-joined-date').innerText = "22/04/2026"; 
             }
             
             const accType = currentUserData.accountType || "FREE"; 
@@ -214,7 +216,8 @@
             } 
         }); 
     }
-            function copyRef() { const el = document.getElementById('ref-link'); el.select(); document.execCommand('copy'); alert("Link Copied!"); }
+
+    function copyRef() { const el = document.getElementById('ref-link'); el.select(); document.execCommand('copy'); alert("Link Copied!"); }
     function toggleSupport() { document.getElementById('support-modal').classList.toggle('hidden'); }
     async function sendText() { const input = document.getElementById('chatMsg'); const text = input.value.trim(); if(!text) return; pushMsg({ type: 'text', content: text, sender: 'user' }); input.value = ''; }
     async function pushMsg(msgObj) { const uid = auth.currentUser.uid; msgObj.timestamp = Date.now(); const messagesRef = db.ref(`support_chats/${uid}/messages`); const snapshot = await messagesRef.once('value'); const isFirstMsg = !snapshot.exists(); await messagesRef.push(msgObj); db.ref(`support_chats/${uid}/meta`).update({ lastMsg: msgObj.type === 'image' ? 'Sent a photo' : msgObj.content, userName: currentUserData.fullName, time: Date.now(), unread: true }); if (isFirstMsg) { setTimeout(() => { messagesRef.push({ type: 'text', content: "এডমিন অনলাইনে আসলে আপনার এসএমএস এর রিপ্লাই দিবে। ধন্যবাদ!", sender: 'admin', timestamp: Date.now() }); }, 1000); } }
