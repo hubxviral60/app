@@ -28,6 +28,7 @@
         .chat-user { background: #ff4500; color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
         .chat-admin { background: #222; color: #eee; align-self: flex-start; border-bottom-left-radius: 2px; }
         .notice-bar { background: #ff45001a; border: 1px dashed #ff4500; padding: 10px; border-radius: 12px; margin: 0 12px 15px 12px; display: none; }
+        .ref-container { background: #000; border: 1px solid #222; border-radius: 20px; padding: 15px; margin: 20px 0; text-align: left; }
     </style>
 </head>
 <body class="bg-[#0a0a0a]">
@@ -37,7 +38,8 @@
             <h2 class="text-xl font-black text-white uppercase mb-2">Under Maintenance</h2>
         </div>
     </div>
-        <div id="payment-modal" class="fixed inset-0 flex items-center justify-center p-6 hidden">
+    
+    <div id="payment-modal" class="fixed inset-0 flex items-center justify-center p-6 hidden">
         <div class="bg-[#1a1a1a] p-6 rounded-3xl border border-[#ff4500]/50 w-full max-w-sm shadow-2xl text-center">
             <i class="fas fa-crown text-4xl text-yellow-500 mb-2"></i>
             <h2 class="text-xl font-black uppercase">Upgrade to Premium</h2>
@@ -59,13 +61,7 @@
 
     <div id="support-modal" class="fixed inset-0 hidden flex-col">
         <div class="p-4 border-b border-gray-800 flex justify-between items-center bg-black">
-            <div class="flex items-center gap-2">
-                <div class="w-8 h-8 bg-[#ff4500] rounded-full flex items-center justify-center text-[10px]">AD</div>
-                <div>
-                    <h3 class="text-sm font-bold">HubX Viral Admin</h3>
-                    <p class="text-[10px] text-green-500">Online</p>
-                </div>
-            </div>
+            <div class="flex items-center gap-2"><div class="w-8 h-8 bg-[#ff4500] rounded-full flex items-center justify-center text-[10px]">AD</div><div><h3 class="text-sm font-bold">HubX Viral Admin</h3><p class="text-[10px] text-green-500">Online</p></div></div>
             <button onclick="toggleSupport()" class="text-gray-500"><i class="fas fa-times text-xl"></i></button>
         </div>
         <div id="chat-box" class="flex-1 overflow-y-auto p-4 flex flex-col space-y-2"></div>
@@ -78,8 +74,7 @@
             </div>
         </div>
     </div>
-
-    <header class="tube-header p-4 flex justify-between items-center sticky top-0 z-50">
+        <header class="tube-header p-4 flex justify-between items-center sticky top-0 z-50">
         <h1 class="text-xl font-black italic text-[#ff4500] uppercase" onclick="location.reload()">HUBX <span class="text-white">VIRAL 2.0</span></h1>
         <div class="flex gap-3 items-center">
             <div id="u-badge-top" class="px-2 py-1 bg-gray-800 rounded text-[8px] font-black uppercase text-gray-400">Free</div>
@@ -98,9 +93,7 @@
                 <button class="bg-[#ff4500] px-5 font-bold text-xs uppercase">Search</button>
             </div>
         </div>
-        <div id="app-notice" class="notice-bar">
-            <p class="text-[10px] text-gray-300 font-bold leading-relaxed"><i class="fas fa-bullhorn text-[#ff4500] mr-2"></i><span id="notice-text"></span></p>
-        </div>
+        <div id="app-notice" class="notice-bar"><p class="text-[10px] text-gray-300 font-bold leading-relaxed"><i class="fas fa-bullhorn text-[#ff4500] mr-2"></i><span id="notice-text"></span></p></div>
         <div class="px-3 flex gap-2 overflow-x-auto no-scrollbar mb-4">
             <div class="cat-chip active" onclick="filterCat('All', this)">ALL</div>
             <div class="cat-chip" onclick="filterCat('Deshi', this)">DESHI</div>
@@ -112,7 +105,7 @@
             <h2 id="feed-title" class="text-xs font-black text-[#ff4500] uppercase mb-4 flex items-center gap-2"><i class="fas fa-fire"></i> New & Viral</h2>
             <div id="video-grid" class="grid grid-cols-1 gap-2"></div>
             <div class="my-6 overflow-hidden rounded-xl">
-                <script async="async" data-cfasync="false" src="https://unsettledradiator.com/d00583cb02481efc137f3bd306146fa4/invoke.js"></script>
+               <script async="async" data-cfasync="false" src="https://unsettledradiator.com/d00583cb02481efc137f3bd306146fa4/invoke.js"></script>
                 <div id="container-d00583cb02481efc137f3bd306146fa4"></div>
             </div>
             <div id="pg-box" class="flex justify-center items-center gap-4 mt-6 mb-10 hidden">
@@ -138,8 +131,20 @@
             <div class="flex items-center justify-center gap-2 mb-1">
                 <h2 class="text-xl font-black" id="p-name">Loading...</h2>
                 <i class="fas fa-edit text-gray-500 text-xs cursor-pointer" id="edit-name-icon" onclick="toggleNameEdit()"></i>
+            </div>
+            <p class="text-gray-500 text-xs mb-6" id="p-username">@username</p>
+
+            <div class="ref-container">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-[9px] font-black text-[#ff4500] uppercase"><i class="fas fa-gift mr-1"></i> Invite & Get 3 Days</span>
+                    <span class="text-[9px] font-bold text-green-500 bg-green-500/10 px-2 py-1 rounded-lg">Total Ref: <span id="p-ref-count">0</span></span>
                 </div>
-                  <p class="text-gray-500 text-xs mb-6" id="p-username">@username</p>
+                <div class="flex gap-2">
+                    <input type="text" id="ref-link" readonly class="flex-1 bg-black border border-gray-800 rounded-lg p-2 text-[10px] text-gray-400 outline-none">
+                    <button onclick="copyRef()" class="bg-green-600 px-4 rounded-lg text-[10px] font-black uppercase">Copy</button>
+                </div>
+            </div>
+
             <div class="space-y-2 text-left">
                 <div class="bg-black p-4 rounded-2xl flex justify-between"><span class="text-gray-500 text-xs font-bold uppercase">Status</span><span id="p-acc-type" class="text-[#ff4500] text-xs font-black">FREE</span></div>
                 <div class="bg-black p-4 rounded-2xl flex justify-between"><span class="text-gray-500 text-xs font-bold uppercase">Joined Date</span><span id="p-joined-date" class="text-gray-400 text-[10px] font-black italic">-- -- --</span></div>
@@ -148,15 +153,14 @@
             <button onclick="auth.signOut()" class="w-full mt-8 bg-red-600/10 text-red-500 py-4 rounded-2xl font-black uppercase text-xs">Logout Account</button>
         </div>
     </div>
-        <div onclick="toggleSupport()" class="floating-support"><i class="fas fa-comments"></i></div>
 
+    <div onclick="toggleSupport()" class="floating-support"><i class="fas fa-comments"></i></div>
     <nav class="fixed bottom-0 left-0 right-0 bg-black/80 backdrop-blur-md border-t border-gray-900 flex justify-around p-4 z-50">
         <div id="nav-home" onclick="showTab('home')" class="nav-item text-[#ff4500] cursor-pointer"><i class="fas fa-home text-xl"></i></div>
         <div id="nav-saved" onclick="showTab('saved')" class="nav-item text-gray-600 cursor-pointer"><i class="fas fa-heart text-xl"></i></div>
         <div id="nav-profile" onclick="showTab('profile')" class="nav-item text-gray-600 cursor-pointer"><i class="fas fa-user-circle text-xl"></i></div>
     </nav>
-
-    <script>
+        <script>
     const firebaseConfig = { apiKey: "AIzaSyDY93jrkGfIntFOA8_M3MCPoRVIuag_ppU", databaseURL: "https://build-realtime-database-default-rtdb.firebaseio.com" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database(); const auth = firebase.auth();
@@ -165,42 +169,61 @@
 
     auth.onAuthStateChanged(user => { if (user) { checkMaintenance(); listenNotice(); loadUserProfile(user.uid); loadSavedIds(user.uid); loadVideos(); listenMessages(user.uid); } else { window.location.href = "login.html"; } });
 
+    function loadUserProfile(uid) { 
+        db.ref('users/' + uid).on('value', snap => { 
+            currentUserData = snap.val(); if(!currentUserData) return; 
+            
+            document.getElementById('p-name').innerText = currentUserData.fullName || "User"; 
+            document.getElementById('p-username').innerText = '@' + (currentUserData.username || 'user');
+            document.getElementById('ref-link').value = window.location.origin + "/signup.html?ref=" + uid;
+            document.getElementById('p-ref-count').innerText = currentUserData.referralCount || 0;
+
+            // Updated Date Logic for better compatibility
+            if(currentUserData.joinedDate) {
+                document.getElementById('p-joined-date').innerText = currentUserData.joinedDate;
+            } else if(currentUserData.timestamp) {
+                const date = new Date(currentUserData.timestamp);
+                const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
+                document.getElementById('p-joined-date').innerText = date.toLocaleDateString('en-GB', options);
+            } else {
+                document.getElementById('p-joined-date').innerText = "22/04/2026"; // Default/Fallback
+            }
+            
+            const accType = currentUserData.accountType || "FREE"; 
+            document.getElementById('u-badge-top').innerText = accType; 
+            document.getElementById('p-acc-type').innerText = accType + " USER"; 
+            
+            if(currentUserData.profilePic) { 
+                const img = `<img src="${currentUserData.profilePic}" class="w-full h-full object-cover">`; 
+                document.getElementById('p-avatar-box').innerHTML = img; 
+                document.getElementById('top-user-icon').innerHTML = img; 
+            } 
+
+            if(accType === "PREMIUM" && currentUserData.expiryTimestamp) { 
+                document.getElementById('expiry-box').classList.remove('hidden'); 
+                const diff = currentUserData.expiryTimestamp - Date.now(); 
+                if (diff > 0) {
+                    const days = Math.ceil(diff / (1000 * 60 * 60 * 24)); 
+                    document.getElementById('p-expiry-countdown').innerText = days + " Days"; 
+                } else {
+                    document.getElementById('p-expiry-countdown').innerText = "Expired";
+                    db.ref('users/' + uid).update({ accountType: "FREE" });
+                }
+            } else { 
+                document.getElementById('expiry-box').classList.add('hidden'); 
+            } 
+        }); 
+    }
+            function copyRef() { const el = document.getElementById('ref-link'); el.select(); document.execCommand('copy'); alert("Link Copied!"); }
     function toggleSupport() { document.getElementById('support-modal').classList.toggle('hidden'); }
     async function sendText() { const input = document.getElementById('chatMsg'); const text = input.value.trim(); if(!text) return; pushMsg({ type: 'text', content: text, sender: 'user' }); input.value = ''; }
     async function pushMsg(msgObj) { const uid = auth.currentUser.uid; msgObj.timestamp = Date.now(); const messagesRef = db.ref(`support_chats/${uid}/messages`); const snapshot = await messagesRef.once('value'); const isFirstMsg = !snapshot.exists(); await messagesRef.push(msgObj); db.ref(`support_chats/${uid}/meta`).update({ lastMsg: msgObj.type === 'image' ? 'Sent a photo' : msgObj.content, userName: currentUserData.fullName, time: Date.now(), unread: true }); if (isFirstMsg) { setTimeout(() => { messagesRef.push({ type: 'text', content: "এডমিন অনলাইনে আসলে আপনার এসএমএস এর রিপ্লাই দিবে। ধন্যবাদ!", sender: 'admin', timestamp: Date.now() }); }, 1000); } }
-
-    function loadUserProfile(uid) { db.ref('users/' + uid).on('value', snap => { currentUserData = snap.val(); if(!currentUserData) return; document.getElementById('p-name').innerText = currentUserData.fullName || "User"; document.getElementById('p-username').innerText = '@' + (currentUserData.username || 'user'); if(currentUserData.joinedDate) document.getElementById('p-joined-date').innerText = currentUserData.joinedDate; else if(currentUserData.timestamp) document.getElementById('p-joined-date').innerText = new Date(currentUserData.timestamp).toLocaleDateString(); else document.getElementById('p-joined-date').innerText = "22/04/2026"; const accType = currentUserData.accountType || "FREE"; document.getElementById('u-badge-top').innerText = accType; document.getElementById('p-acc-type').innerText = accType + " USER"; if(currentUserData.profilePic) { const img = `<img src="${currentUserData.profilePic}" class="w-full h-full object-cover">`; document.getElementById('p-avatar-box').innerHTML = img; document.getElementById('top-user-icon').innerHTML = img; } if(accType === "PREMIUM" && currentUserData.expiryTimestamp) { document.getElementById('expiry-box').classList.remove('hidden'); const diff = currentUserData.expiryTimestamp - Date.now(); const days = Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24))); document.getElementById('p-expiry-countdown').innerText = days + " Days"; } else { document.getElementById('expiry-box').classList.add('hidden'); } }); }
     function listenNotice() { db.ref('app_settings/notice').on('value', s => { const d = s.val(); const b = document.getElementById('app-notice'); if (d && d.message) { document.getElementById('notice-text').innerText = d.message; b.style.display = 'block'; } else { b.style.display = 'none'; } }); }
     async function sendImage(input) { if(!input.files[0]) return; const fd = new FormData(); fd.append("image", input.files[0]); try { const r = await fetch(`https://api.imgbb.com/1/upload?key=${IMBB_KEY}`, { method: "POST", body: fd }); const j = await r.json(); if(j.success) pushMsg({ type: 'image', content: j.data.url, sender: 'user' }); } catch (e) {} }
     function listenMessages(uid) { db.ref(`support_chats/${uid}/messages`).on('value', snap => { const box = document.getElementById('chat-box'); box.innerHTML = ''; snap.forEach(child => { const m = child.val(); const isUser = m.sender === 'user'; let content = m.type === 'image' ? `<img src="${m.content}" class="rounded-lg max-w-full">` : m.content; box.innerHTML += `<div class="chat-bubble ${isUser ? 'chat-user' : 'chat-admin'}">${content}</div>`; }); box.scrollTop = box.scrollHeight; }); }
     function loadVideos() { db.ref('videos').on('value', snap => { allVideos = []; snap.forEach(c => { allVideos.push({...c.val(), id: c.key}); }); allVideos.reverse(); filteredVideos = [...allVideos]; renderPaginated(); renderSavedVideos(); }); }
     function renderPaginated() { const start = (currentPage - 1) * limit; const end = start + limit; renderVideos(filteredVideos.slice(start, end), 'video-grid'); const pgBox = document.getElementById('pg-box'); if(filteredVideos.length > limit) { pgBox.classList.remove('hidden'); document.getElementById('pageTxt').innerText = `Page ${currentPage}`; document.getElementById('prevBtn').disabled = currentPage === 1; document.getElementById('nextBtn').disabled = end >= filteredVideos.length; } else { pgBox.classList.add('hidden'); } }
-
-    function renderVideos(videos, targetId) {
-        const grid = document.getElementById(targetId); if(!grid) return; grid.innerHTML = '';
-        videos.forEach(d => {
-            const isSaved = savedVideoIds.includes(d.id);
-            grid.innerHTML += `
-            <div class="video-box" onclick="handleVideoPlay('${d.video_url}', '${d.title}', '${d.id}', '${d.type}')">
-                ${d.type === 'Premium' ? '<div class="premium-tag"><i class="fas fa-crown mr-1"></i>PRO</div>' : ''}
-                <div class="relative">
-                    <img src="${d.thumbnail}" class="w-full aspect-video object-cover">
-                    <span class="duration-tag">${d.duration || '00:00'}</span>
-                </div>
-                <div class="p-4">
-                    <h3 class="text-sm font-bold line-clamp-2 text-gray-100">${d.title}</h3>
-                    <div class="flex justify-between items-center mt-4">
-                        <span class="text-[10px] text-gray-500 font-bold uppercase"><i class="far fa-eye mr-1 text-red-500"></i> ${d.views || 0}</span>
-                        <div class="flex gap-5 items-center">
-                            <i class="fas fa-heart text-lg ${isSaved ? 'text-red-600' : 'text-gray-600'}" onclick="event.stopPropagation(); toggleSaveVideo('${d.id}')"></i>
-                            <i class="fas fa-share-nodes text-lg text-gray-400" onclick="event.stopPropagation(); shareVideo('${d.title}', '${d.id}')"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>`;
-        });
-    }
-
+    function renderVideos(videos, targetId) { const grid = document.getElementById(targetId); if(!grid) return; grid.innerHTML = ''; videos.forEach(d => { const isSaved = savedVideoIds.includes(d.id); grid.innerHTML += `<div class="video-box" onclick="handleVideoPlay('${d.video_url}', '${d.title}', '${d.id}', '${d.type}')">${d.type === 'Premium' ? '<div class="premium-tag"><i class="fas fa-crown mr-1"></i>PRO</div>' : ''}<div class="relative"><img src="${d.thumbnail}" class="w-full aspect-video object-cover"><span class="duration-tag">${d.duration || '00:00'}</span></div><div class="p-4"><h3 class="text-sm font-bold line-clamp-2 text-gray-100">${d.title}</h3><div class="flex justify-between items-center mt-4"><span class="text-[10px] text-gray-500 font-bold uppercase"><i class="far fa-eye mr-1 text-red-500"></i> ${d.views || 0}</span><div class="flex gap-5 items-center"><i class="fas fa-heart text-lg ${isSaved ? 'text-red-600' : 'text-gray-600'}" onclick="event.stopPropagation(); toggleSaveVideo('${d.id}')"></i><i class="fas fa-share-nodes text-lg text-gray-400" onclick="event.stopPropagation(); shareVideo('${d.title}', '${d.id}')"></i></div></div></div></div>`; }); }
     function showTab(t) { ['home-tab', 'saved-tab', 'profile-tab'].forEach(id => document.getElementById(id).classList.add('hidden')); document.getElementById(t + '-tab').classList.remove('hidden'); document.querySelectorAll('.nav-item').forEach(i => i.classList.replace('text-[#ff4500]', 'text-gray-600')); document.getElementById('nav-' + t).classList.replace('text-gray-600', 'text-[#ff4500]'); }
     function toggleNameEdit() { const nt = document.getElementById('p-name'); const ic = document.getElementById('edit-name-icon'); if (ic.classList.contains('fa-edit')) { nt.innerHTML = `<input type="text" id="name-input" class="bg-transparent border-b border-[#ff4500] outline-none text-center" value="${nt.innerText}">`; ic.classList.replace('fa-edit', 'fa-check-circle'); ic.classList.add('text-green-500'); } else { const nn = document.getElementById('name-input').value; if(!nn.trim()) return; db.ref('users/' + auth.currentUser.uid).update({ fullName: nn }).then(() => { nt.innerText = nn; ic.classList.replace('fa-check-circle', 'fa-edit'); ic.classList.remove('text-green-500'); }); } }
     async function uploadToImgBB(i) { if(!i.files[0]) return; const fd = new FormData(); fd.append("image", i.files[0]); try { const r = await fetch(`https://api.imgbb.com/1/upload?key=${IMBB_KEY}`, { method: "POST", body: fd }); const j = await r.json(); if(j.success) { await db.ref('users/' + auth.currentUser.uid).update({ profilePic: j.data.url }); } } catch (e) {} }
