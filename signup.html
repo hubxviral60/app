@@ -48,7 +48,8 @@
             </div>
         </div>
     </div>
-        <script>
+
+    <script>
         const firebaseConfig = {
             apiKey: "AIzaSyDY93jrkGfIntFOA8_M3MCPoRVIuag_ppU",
             databaseURL: "https://build-realtime-database-default-rtdb.firebaseio.com"
@@ -58,7 +59,7 @@
         const auth = firebase.auth();
         const db = firebase.database();
 
-        // রেফারেল আইডি ডিটেকশন
+        // URL থেকে রেফারেল আইডি ডিটেকশন
         const urlParams = new URLSearchParams(window.location.search);
         const referrerId = urlParams.get('ref');
 
@@ -78,10 +79,11 @@
                 const userCredential = await auth.createUserWithEmailAndPassword(email, pass);
                 const user = userCredential.user;
 
-                // আজকের তারিখ (play.html এর সাথে মিল রাখা হয়েছে)
-                const joinedDate = new Date().toLocaleDateString('en-GB');
+                // তারিখ ফরম্যাট: DD/MM/YYYY
+                const d = new Date();
+                const joinedDate = `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
 
-                // ডাটাবেসে ইউজার ইনফো সেভ
+                // ডাটাবেসে ইউজার ইনফো সেভ (referralCount কী ব্যবহার করা হয়েছে)
                 await db.ref('users/' + user.uid).set({
                     uid: user.uid,
                     fullName: name,
@@ -90,27 +92,29 @@
                     accountType: "FREE",
                     joinedDate: joinedDate,
                     profilePic: "",
-                    referCount: 0,
-                    referredBy: referrerId || "DIRECT", // কার রেফারে জয়েন করেছে তা সেভ রাখা হলো
+                    referralCount: 0,
+                    referredBy: referrerId || "DIRECT",
                     expiryTimestamp: 0
                 });
 
-                // যদি রেফারেল লিংক থেকে আসে, তবে রিওয়ার্ড ফাংশন কল হবে
+                // রেফারেল রিওয়ার্ড লজিক
                 if(referrerId && referrerId !== user.uid) {
                     await rewardReferrer(referrerId);
                 }
 
                 alert("রেজিস্ট্রেশন সফল হয়েছে!");
-                window.location.replace("index.html");
+                
+                // আপডেট: আপনার ফাইল যেহেতু /app/ এর ভেতরে, তাই সঠিক রিডাইরেক্ট
+                window.location.replace("/app/index.html");
 
             } catch (error) {
-                console.error(error);
                 alert("সমস্যা: " + error.message);
                 btn.disabled = false;
                 btn.innerText = "Create Account";
             }
         }
-                async function rewardReferrer(refId) {
+
+        async function rewardReferrer(refId) {
             try {
                 const refUserRef = db.ref('users/' + refId);
                 const snapshot = await refUserRef.once('value');
@@ -118,18 +122,17 @@
                 if (snapshot.exists()) {
                     const userData = snapshot.val();
                     
-                    // প্রিমিয়াম সময় বাড়ানোর লজিক (৩ দিন)
+                    // প্রিমিয়াম সময় বাড়ানোর লজিক (৩ দিন যোগ হবে)
                     let currentExpiry = userData.expiryTimestamp || Date.now();
                     if (currentExpiry < Date.now()) currentExpiry = Date.now();
 
                     const threeDays = 3 * 24 * 60 * 60 * 1000;
                     const newExpiry = currentExpiry + threeDays;
 
-                    // ১. অ্যাকাউন্ট প্রিমিয়াম করা, ২. টাইম বাড়ানো, ৩. রেফার সংখ্যা ১ বাড়ানো
                     await refUserRef.update({
                         accountType: 'PREMIUM',
                         expiryTimestamp: newExpiry,
-                        referCount: (userData.referCount || 0) + 1
+                        referralCount: (userData.referralCount || 0) + 1
                     });
                 }
             } catch (e) { 
