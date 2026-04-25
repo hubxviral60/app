@@ -11,40 +11,33 @@
     <style>
         body { background: #0a0a0a; color: white; font-family: sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
         .login-card { background: #111; padding: 2rem; border-radius: 24px; border: 1px solid #333; width: 100%; max-width: 380px; }
-        input { background: #1a1a1a !important; border: 1px solid #333 !important; color: white !important; }
+        input { background: #1a1a1a !important; border: 1px solid #333 !important; color: white !important; transition: 0.3s; }
         input:focus { border-color: #ff4500 !important; outline: none; }
-        .primary-btn { background: #ff4500; transition: 0.3s; }
+        .primary-btn { background: #ff4500; font-weight: 900; }
         .primary-btn:active { transform: scale(0.98); }
-        #recovery-modal { background: rgba(0,0,0,0.9); z-index: 9999; }
-
-        /* Age Verification Style */
         #age-gate-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.96); backdrop-filter: blur(12px); display: none; align-items: center; justify-content: center; z-index: 100000; padding: 20px; }
-        .age-card { background: #111; border: 1px solid rgba(255, 69, 0, 0.3); border-radius: 28px; padding: 32px; width: 100%; max-width: 340px; text-align: center; box-shadow: 0 15px 40px rgba(0,0,0,0.5); }
+        .age-card { background: #111; border: 1px solid rgba(255, 69, 0, 0.3); border-radius: 28px; padding: 32px; width: 100%; max-width: 340px; text-align: center; }
     </style>
 </head>
 <body>
-
     <div id="age-gate-overlay">
         <div class="age-card">
             <div class="w-16 h-16 bg-[#ff4500]/10 rounded-full flex items-center justify-center mx-auto mb-5 border border-[#ff4500]/30">
                 <i class="fas fa-exclamation-triangle text-2xl text-[#ff4500]"></i>
             </div>
             <h2 class="text-xl font-black text-white uppercase italic tracking-tighter mb-3">Adult Content (18+)</h2>
-            <p class="text-gray-400 text-[11px] leading-relaxed mb-8 font-bold">
-                এই অ্যাপটি প্রাপ্তবয়স্কদের জন্য। এখানে থাকা কন্টেন্ট দেখতে আপনার বয়স অবশ্যই ১৮+ হতে হবে। আপনি কি প্রবেশ করতে ইচ্ছুক?
-            </p>
-            <button onclick="acceptAge()" class="w-full bg-[#ff4500] py-4 rounded-xl font-black uppercase text-xs mb-3 shadow-lg shadow-[#ff4500]/20">হ্যাঁ, আমার বয়স ১৮+</button>
+            <p class="text-gray-400 text-[11px] leading-relaxed mb-8 font-bold">এই অ্যাপটি প্রাপ্তবয়স্কদের জন্য। কন্টেন্ট দেখতে আপনার বয়স অবশ্যই ১৮+ হতে হবে। আপনি কি প্রবেশ করতে ইচ্ছুক?</p>
+            <button onclick="acceptAge()" class="w-full bg-[#ff4500] py-4 rounded-xl font-black uppercase text-xs mb-3">হ্যাঁ, আমার বয়স ১৮+</button>
             <a href="https://www.google.com" class="block text-gray-600 text-[10px] font-bold uppercase tracking-widest">না, বের হয়ে যাব</a>
         </div>
     </div>
-
-    <div id="recovery-modal" class="fixed inset-0 flex items-center justify-center p-6 hidden">
+        <div id="recovery-modal" class="fixed inset-0 flex items-center justify-center p-6 hidden bg-black/90 z-[9999]">
         <div class="bg-[#1a1a1a] p-6 rounded-2xl border border-gray-800 w-full max-w-sm">
             <h2 class="text-lg font-bold mb-2">পাসওয়ার্ড রিকভারি</h2>
-            <p class="text-gray-500 text-[10px] mb-4 uppercase">আপনার ইমেইল দিন, আমরা রিসেট লিঙ্ক পাঠাবো।</p>
-            <input type="email" id="recovery-email" placeholder="ইমেইল অ্যাড্রেস" class="w-full p-4 rounded-xl outline-none text-sm mb-4">
+            <p class="text-gray-500 text-[10px] mb-4 uppercase">ইমেইল দিন, আমরা রিসেট লিঙ্ক পাঠাবো।</p>
+            <input type="email" id="recovery-email" placeholder="email@example.com" class="w-full p-4 rounded-xl outline-none text-sm mb-4">
             <button onclick="sendResetLink()" id="resetBtn" class="w-full bg-white text-black py-3 rounded-xl font-bold uppercase text-xs">Send Link</button>
-            <button onclick="document.getElementById('recovery-modal').classList.add('hidden')" class="w-full mt-3 text-gray-500 text-[10px]">Cancel</button>
+            <button onclick="document.getElementById('recovery-modal').classList.add('hidden')" class="w-full mt-3 text-gray-500 text-[10px] uppercase font-bold">Cancel</button>
         </div>
     </div>
 
@@ -68,17 +61,14 @@
                 <button onclick="document.getElementById('recovery-modal').classList.remove('hidden')" class="text-[10px] font-bold text-[#ff4500] uppercase">Forgot Password?</button>
             </div>
 
-            <button onclick="handleLogin()" id="loginBtn" class="w-full primary-btn py-4 rounded-xl font-black uppercase text-sm shadow-lg shadow-[#ff4500]/20">
-                Log In
-            </button>
+            <button onclick="handleLogin()" id="loginBtn" class="w-full primary-btn py-4 rounded-xl font-black uppercase text-sm shadow-lg shadow-[#ff4500]/20">Log In</button>
 
             <div class="text-center mt-6">
-                <p class="text-gray-500 text-xs">Don't have an account? <a href="signup.html" class="text-[#ff4500] font-bold">Register Now</a></p>
+                <p class="text-gray-500 text-xs">Don't have an account? <a href="javascript:void(0)" onclick="goToSignup()" class="text-[#ff4500] font-bold">Register Now</a></p>
             </div>
         </div>
     </div>
-
-    <script>
+        <script>
         const firebaseConfig = {
             apiKey: "AIzaSyDY93jrkGfIntFOA8_M3MCPoRVIuag_ppU",
             databaseURL: "https://build-realtime-database-default-rtdb.firebaseio.com"
@@ -86,61 +76,65 @@
         if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
         const auth = firebase.auth();
 
-        // --- Age Verification Logic ---
+        // রেফারেল আইডি হ্যান্ডলিং
+        const urlParams = new URLSearchParams(window.location.search);
+        const refId = urlParams.get('ref');
+
+        function goToSignup() {
+            const path = refId ? `signup.html?ref=${refId}` : "signup.html";
+            window.location.href = path;
+        }
+
+        // Age Verification Logic
         window.onload = function() {
-            const isVerified = sessionStorage.getItem('ageVerified');
-            if(!isVerified) {
+            if(!sessionStorage.getItem('ageVerified')) {
                 document.getElementById('age-gate-overlay').style.display = 'flex';
             }
         };
 
         function acceptAge() {
             sessionStorage.setItem('ageVerified', 'true');
-            const overlay = document.getElementById('age-gate-overlay');
-            overlay.style.transition = 'opacity 0.4s';
-            overlay.style.opacity = '0';
-            setTimeout(() => { overlay.style.display = 'none'; }, 400);
+            document.getElementById('age-gate-overlay').style.opacity = '0';
+            setTimeout(() => { document.getElementById('age-gate-overlay').style.display = 'none'; }, 400);
         }
 
-        // Redirect if already logged in
+        // Auth State Check (অটো লগইন)
         auth.onAuthStateChanged(user => {
             if (user) window.location.replace("index.html");
         });
 
-        // Login Logic
         async function handleLogin() {
-            const email = document.getElementById('email').value;
+            const email = document.getElementById('email').value.trim();
             const pass = document.getElementById('password').value;
             const btn = document.getElementById('loginBtn');
-
-            if(!email || !pass) return alert("সব তথ্য দিন!");
+            
+            if(!email || !pass) return alert("ইমেইল এবং পাসওয়ার্ড দিন!");
+            
             btn.disabled = true;
-            btn.innerText = "Checking...";
+            btn.innerText = "Authenticating...";
 
             try {
                 await auth.signInWithEmailAndPassword(email, pass);
             } catch (error) {
-                alert("ভুল ইমেইল বা পাসওয়ার্ড!");
+                alert("ভুল ইমেইল অথবা পাসওয়ার্ড!");
                 btn.disabled = false;
                 btn.innerText = "Log In";
             }
         }
 
-        // Password Recovery Logic
         async function sendResetLink() {
-            const email = document.getElementById('recovery-email').value;
+            const email = document.getElementById('recovery-email').value.trim();
             const btn = document.getElementById('resetBtn');
-
-            if(!email) return alert("ইমেইল দিন");
+            if(!email) return alert("আপনার ইমেইল অ্যাড্রেসটি দিন!");
+            
             btn.innerText = "Sending...";
             btn.disabled = true;
-
             try {
                 await auth.sendPasswordResetEmail(email);
-                alert("আপনার ইমেইল চেক করুন! পাসওয়ার্ড রিসেট লিঙ্ক পাঠানো হয়েছে।");
+                alert("আপনার ইমেইলে পাসওয়ার্ড রিসেট লিঙ্ক পাঠানো হয়েছে। স্প্যাম ফোল্ডারও চেক করবেন।");
                 document.getElementById('recovery-modal').classList.add('hidden');
             } catch (error) {
-                alert("eror: " + error.message);
+                alert("ত্রুটি: " + error.message);
             } finally {
                 btn.innerText = "Send Link";
                 btn.disabled = false;
