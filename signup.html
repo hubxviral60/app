@@ -19,7 +19,6 @@
     </style>
 </head>
 <body>
-
     <div class="signup-card">
         <div class="text-center mb-6">
             <h1 class="text-3xl font-black italic text-[#ff4500] uppercase tracking-tighter">HUBX <span class="text-white">VIRAL 2.0</span></h1>
@@ -29,7 +28,7 @@
         <div class="space-y-4">
             <div>
                 <label class="text-[10px] font-bold text-gray-500 uppercase ml-1">Full Name</label>
-                <input type="text" id="fullName" placeholder="name" class="w-full p-4 mt-1 rounded-xl text-sm">
+                <input type="text" id="fullName" placeholder="Enter name" class="w-full p-4 mt-1 rounded-xl text-sm">
             </div>
             <div>
                 <label class="text-[10px] font-bold text-gray-500 uppercase ml-1">Email Address</label>
@@ -49,8 +48,7 @@
             </div>
         </div>
     </div>
-
-    <script>
+        <script>
         const firebaseConfig = {
             apiKey: "AIzaSyDY93jrkGfIntFOA8_M3MCPoRVIuag_ppU",
             databaseURL: "https://build-realtime-database-default-rtdb.firebaseio.com"
@@ -60,9 +58,13 @@
         const auth = firebase.auth();
         const db = firebase.database();
 
+        // রেফারেল আইডি ডিটেকশন
+        const urlParams = new URLSearchParams(window.location.search);
+        const referrerId = urlParams.get('ref');
+
         async function handleSignup() {
-            const name = document.getElementById('fullName').value;
-            const email = document.getElementById('email').value;
+            const name = document.getElementById('fullName').value.trim();
+            const email = document.getElementById('email').value.trim();
             const pass = document.getElementById('password').value;
             const btn = document.getElementById('signupBtn');
 
@@ -73,37 +75,65 @@
             btn.innerText = "Creating...";
 
             try {
-                // ১. ফায়ারবেস অথেন্টিকেশনে ইউজার তৈরি
                 const userCredential = await auth.createUserWithEmailAndPassword(email, pass);
                 const user = userCredential.user;
 
-                // ২. রিয়েলটাইম ডাটাবেসে ইউজারের তথ্য সেভ করা
-                const today = new Date();
-                const joinedDate = today.getDate() + '/' + (today.getMonth() + 1) + '/' + today.getFullYear();
+                // আজকের তারিখ (play.html এর সাথে মিল রাখা হয়েছে)
+                const joinedDate = new Date().toLocaleDateString('en-GB');
 
+                // ডাটাবেসে ইউজার ইনফো সেভ
                 await db.ref('users/' + user.uid).set({
                     uid: user.uid,
                     fullName: name,
                     email: email,
-                    username: email.split('@')[0], // ইমেইলের প্রথম অংশ ইউজারনেম হিসেবে
+                    username: email.split('@')[0],
                     accountType: "FREE",
-                    joined: joinedDate,
-                    profilePic: "", // শুরুতে খালি থাকবে
+                    joinedDate: joinedDate,
+                    profilePic: "",
+                    referCount: 0,
+                    referredBy: referrerId || "DIRECT", // কার রেফারে জয়েন করেছে তা সেভ রাখা হলো
                     expiryTimestamp: 0
                 });
+
+                // যদি রেফারেল লিংক থেকে আসে, তবে রিওয়ার্ড ফাংশন কল হবে
+                if(referrerId && referrerId !== user.uid) {
+                    await rewardReferrer(referrerId);
+                }
 
                 alert("রেজিস্ট্রেশন সফল হয়েছে!");
                 window.location.replace("index.html");
 
             } catch (error) {
                 console.error(error);
-                if(error.code === 'auth/email-already-in-use') {
-                    alert("এই ইমেইল দিয়ে অলরেডি একাউন্ট আছে!");
-                } else {
-                    alert("সমস্যা হয়েছে: " + error.message);
-                }
+                alert("সমস্যা: " + error.message);
                 btn.disabled = false;
                 btn.innerText = "Create Account";
+            }
+        }
+                async function rewardReferrer(refId) {
+            try {
+                const refUserRef = db.ref('users/' + refId);
+                const snapshot = await refUserRef.once('value');
+                
+                if (snapshot.exists()) {
+                    const userData = snapshot.val();
+                    
+                    // প্রিমিয়াম সময় বাড়ানোর লজিক (৩ দিন)
+                    let currentExpiry = userData.expiryTimestamp || Date.now();
+                    if (currentExpiry < Date.now()) currentExpiry = Date.now();
+
+                    const threeDays = 3 * 24 * 60 * 60 * 1000;
+                    const newExpiry = currentExpiry + threeDays;
+
+                    // ১. অ্যাকাউন্ট প্রিমিয়াম করা, ২. টাইম বাড়ানো, ৩. রেফার সংখ্যা ১ বাড়ানো
+                    await refUserRef.update({
+                        accountType: 'PREMIUM',
+                        expiryTimestamp: newExpiry,
+                        referCount: (userData.referCount || 0) + 1
+                    });
+                }
+            } catch (e) { 
+                console.log("Referral Reward Error:", e); 
             }
         }
     </script>
