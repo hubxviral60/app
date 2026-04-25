@@ -74,6 +74,7 @@
             <div class="flex justify-center items-center gap-3 text-[10px] text-gray-500 font-black uppercase">
                 <span><i class="fas fa-eye text-[#ff4500] mr-1"></i> <span id="v-views">0</span> VIEWS</span>
             </div>
+
             <div class="flex justify-around mt-6 py-4 border-y border-gray-900">
                 <div class="action-btn" id="likeBtn" onclick="handleVote('likes')"><i class="fas fa-thumbs-up text-lg"></i> <span id="v-likes">0</span></div>
                 <div class="action-btn" id="dislikeBtn" onclick="handleVote('dislikes')"><i class="fas fa-thumbs-down text-lg"></i> <span id="v-dislikes">0</span></div>
@@ -121,7 +122,7 @@
         <div id="nav-play" onclick="switchTab('play')" class="text-[#ff4500]"><i class="fas fa-play-circle text-xl"></i></div>
         <div id="nav-profile" onclick="switchTab('profile')" class="text-gray-600"><i class="fas fa-user-circle text-xl"></i></div>
     </nav>
-    <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
+        <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
     <script>
         const firebaseConfig = { apiKey: "AIzaSyDY93jrkGfIntFOA8_M3MCPoRVIuag_ppU", databaseURL: "https://build-realtime-database-default-rtdb.firebaseio.com" };
         firebase.initializeApp(firebaseConfig);
@@ -142,11 +143,14 @@
                 userData = snap.val(); if(!userData) return;
                 document.getElementById('p-name').innerText = userData.fullName || "User";
                 document.getElementById('p-username').innerText = "@" + (userData.username || "user");
-                document.getElementById('ref-link').value = `${window.location.origin}/signup.html?ref=${uid}`;
+                
+                // --- UPDATED REFERRAL LINK WITH /app ---
+                document.getElementById('ref-link').value = `${window.location.origin}/app/signup.html?ref=${uid}`;
+                
                 document.getElementById('p-ref-count').innerText = userData.referralCount || 0;
                 document.getElementById('p-joined').innerText = userData.joinedDate || (userData.timestamp ? new Date(userData.timestamp).toLocaleDateString('en-GB') : "25/04/2026");
                 const accType = userData.accountType || "FREE";
-            document.getElementById('p-acc-type').innerText = accType + " USER";
+                document.getElementById('p-acc-type').innerText = accType + " USER";
                 const exBox = document.getElementById('expiry-box');
                 if(accType === "PREMIUM" && userData.expiryTimestamp) {
                     exBox.classList.remove('hidden');
