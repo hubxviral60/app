@@ -48,7 +48,8 @@
             </div>
         </div>
     </div>
-        <script>
+
+    <script>
         const firebaseConfig = {
             apiKey: "AIzaSyDY93jrkGfIntFOA8_M3MCPoRVIuag_ppU",
             databaseURL: "https://build-realtime-database-default-rtdb.firebaseio.com"
@@ -62,7 +63,7 @@
         const referrerId = urlParams.get('ref');
 
         async function handleSignup() {
-            const name = document.getElementById('fullName').trim ? document.getElementById('fullName').value.trim() : document.getElementById('fullName').value;
+            const name = document.getElementById('fullName').value.trim();
             const email = document.getElementById('email').value.trim();
             const pass = document.getElementById('password').value;
             const btn = document.getElementById('signupBtn');
@@ -93,13 +94,12 @@
                     expiryTimestamp: 0
                 });
 
+                // রেফারারকে বোনাস দেওয়ার লজিক কল
                 if(referrerId && referrerId !== user.uid) {
                     await rewardReferrer(referrerId);
                 }
 
                 alert("রেজিস্ট্রেশন সফল! এখন লগইন করুন।");
-                
-                // আপডেট: সরাসরি লগইন ফাইলে পাঠানো হচ্ছে
                 window.location.replace("login.html");
 
             } catch (error) {
@@ -108,17 +108,18 @@
                 btn.innerText = "Create Account";
             }
         }
-                async function rewardReferrer(refId) {
+
+        async function rewardReferrer(refId) {
             try {
                 const refUserRef = db.ref('users/' + refId);
                 const snapshot = await refUserRef.once('value');
                 
                 if (snapshot.exists()) {
                     const userData = snapshot.val();
-                    let currentExpiry = userData.expiryTimestamp || Date.now();
-                    if (currentExpiry < Date.now()) currentExpiry = Date.now();
+                    // যদি মেয়াদ শেষ হয়ে থাকে তবে বর্তমান সময় থেকে যোগ হবে, নাহলে আগের মেয়াদের সাথে যোগ হবে
+                    let currentExpiry = (userData.expiryTimestamp && userData.expiryTimestamp > Date.now()) ? userData.expiryTimestamp : Date.now();
 
-                    const threeDays = 3 * 24 * 60 * 60 * 1000;
+                    const threeDays = 3 * 24 * 60 * 60 * 1000; 
                     const newExpiry = currentExpiry + threeDays;
 
                     await refUserRef.update({
