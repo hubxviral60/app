@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Videos - HubX Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:Inter,sans-serif}
+        body{background:#f5f5f7;color:#111;display:none}
+        .admin-header{height:65px;background:#fff;border-bottom:1px solid #e5e5e5;display:flex;justify-content:space-between;align-items:center;padding:0 25px;position:sticky;top:0;z-index:100}
+        .admin-logo{font-weight:900;font-size:18px;text-decoration:none;color:#111}.admin-logo span{color:#ff0000}
+        #logoutBtn{background:#111;color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer}
+        .container{max-width:1100px;margin:0 auto;padding:25px}
+        .back-btn{display:inline-flex;align-items:center;gap:6px;text-decoration:none;color:#555;margin-bottom:20px;font-size:14px;font-weight:600}
+        .back-btn:hover{color:#111}
+        .page-title{font-size:22px;font-weight:800;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+        
+        /* Search and Filter Bar Style */
+        .filter-bar{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+        .filter-bar input, .filter-bar select{flex:1;min-width:200px;padding:12px 15px;border:1px solid #ddd;border-radius:10px;outline:none;background:#fff;font-size:14px}
+
+        /* Video List & Card */
+        .video-list{display:flex;flex-direction:column;gap:15px}
+        .video-card{background:#fff;padding:15px;border-radius:15px;border:1px solid #eee;display:flex;align-items:center;gap:15px;justify-content:space-between;flex-wrap:wrap}
+        .video-info{display:flex;align-items:center;gap:15px;flex:1;min-width:280px}
+        .video-thumb{width:90px;height:60px;border-radius:8px;object-fit:cover;background:#ddd}
+        .video-details h4{font-size:15px;font-weight:700;margin-bottom:4px;color:#111}
+        .video-details p{font-size:12px;color:#666;margin-bottom:2px}
+        .video-actions{display:flex;gap:8px}
+        .btn-edit{background:#007aff;color:#fff;border:none;padding:8px 14px;border-radius:8px;cursor:pointer;font-size:13px}
+        .btn-delete{background:#ff3b30;color:#fff;border:none;padding:8px 14px;border-radius:8px;cursor:pointer;font-size:13px}
+        
+        /* Modal Style */
+        .modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:none;justify-content:center;align-items:center;padding:20px;z-index:1000}
+        .modal-content{background:#fff;padding:25px;border-radius:15px;width:100%;max-width:500px;position:relative}
+        .modal-content h3{margin-bottom:15px;font-size:18px}
+        .form-group{margin-bottom:12px}
+        .form-group label{font-size:12px;font-weight:600;color:#555;margin-bottom:5px;display:block}
+        .form-group input{width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;outline:none}
+        .modal-btns{display:flex;gap:10px;margin-top:15px}
+        .btn-save{background:#00a344;color:#fff;border:none;padding:10px;border-radius:8px;flex:1;cursor:pointer;font-weight:700}
+        .btn-cancel{background:#ccc;color:#111;border:none;padding:10px;border-radius:8px;flex:1;cursor:pointer;font-weight:700}
+    </style>
+</head>
+<body>
+    <header class="admin-header">
+        <a href="admin-dashboard.html" class="admin-logo"><span>HUBX</span> ADMIN</a>
+        <button id="logoutBtn">Logout</button>
+    </header>
+
+    <div class="container">
+        <a href="admin-dashboard.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</a>
+        <div class="page-title">
+            <span><i class="fa-solid fa-video"></i> Manage All Videos</span>
+        </div>
+
+        <!-- সার্চ এবং ফিল্টার বার -->
+        <div class="filter-bar">
+            <input type="text" id="searchInput" placeholder="ভিডিওর নাম দিয়ে সার্চ করুন..." onkeyup="filterVideos()">
+            <select id="categoryFilter" onchange="filterVideos()">
+                <option value="all">সব ক্যাটাগরি (All Categories)</option>
+            </select>
+        </div>
+
+        <div class="video-list" id="videoList">
+            <p style="text-align:center;color:#777;padding:20px;">লোড হচ্ছে...</p>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal" id="editModal">
+        <div class="modal-content">
+            <h3>Edit Video Info</h3>
+            <input type="hidden" id="editId">
+            <div class="form-group"><label>Title</label><input type="text" id="editTitle"></div>
+            <div class="form-group"><label>Category</label><input type="text" id="editCategory"></div>
+            <div class="form-group"><label>Duration</label><input type="text" id="editDuration"></div>
+            <div class="form-group"><label>Video Link</label><input type="text" id="editVideoUrl"></div>
+            <div class="form-group"><label>Thumbnail URL</label><input type="text" id="editThumbnail"></div>
+            <div style="display:flex;gap:8px;margin:10px 0"><input type="checkbox" id="editIsPremium"><label for="editIsPremium">Premium?</label></div>
+            <div class="modal-btns">
+                <button class="btn-save" id="updateBtn">Update</button>
+                <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = { apiKey: "AIzaSyBQu8cmBIEsSBIsvSsvXH3jGYjopWnf5pM", authDomain: "hubx-viral.firebaseapp.com", projectId: "hubx-viral", storageBucket: "hubx-viral.firebasestorage.app", messagingSenderId: "694752071521", appId: "1:694752071521:web:79603b500368f90070ff20" };
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        let allVideosData = []; // সমস্ত ভিডিও ডাটা লোকালি স্টোর করার জন্য
+
+        // 🛡️ সিকিউরিটি চেক
+        firebase.auth().onAuthStateChanged((user) => {
+            if (!user) { location.href = "admin-login.html"; return; }
+            db.collection('admins').doc(user.uid).get().then(doc => {
+                if(doc.exists && doc.data().role === "admin") {
+                    document.body.style.display = "block";
+                    fetchVideos();
+                } else {
+                    location.href = "admin-login.html";
+                }
+            }).catch(() => { location.href = "admin-login.html"; });
+        });
+
+        document.getElementById('logoutBtn').onclick = () => firebase.auth().signOut().then(() => location.href="admin-login.html");
+
+        // ডাটাবেজ থেকে ভিডিও ফেচ করা এবং ক্যাটাগরি অপশন তৈরি করা
+        function fetchVideos() {
+            db.collection("videos").orderBy("createdAt", "desc").onSnapshot(snapshot => {
+                allVideosData = [];
+                let categories = new Set();
+
+                snapshot.forEach(doc => {
+                    const v = doc.data();
+                    allVideosData.push({ id: doc.id, ...v });
+                    if(v.category) categories.add(v.category.toLowerCase());
+                });
+
+                // ক্যাটাগরি ড্রপডাউন আপডেট করা
+                let catSelect = document.getElementById('categoryFilter');
+                let currentSelected = catSelect.value;
+                let catHtml = `<option value="all">সব ক্যাটাগরি (All Categories)</option>`;
+                categories.forEach(cat => {
+                    catHtml += `<option value="${cat}">${cat}</option>`;
+                });
+                catSelect.innerHTML = catHtml;
+                catSelect.value = currentSelected;
+
+                displayVideos(allVideosData);
+            });
+        }
+
+        // ভিডিও রেন্ডার বা স্ক্রিনে দেখানোর ফাংশন
+        function displayVideos(videos) {
+            const listEl = document.getElementById('videoList');
+            if(videos.length === 0) {
+                listEl.innerHTML = `<p style="text-align:center;color:#777;padding:20px;">কোনো ভিডিও পাওয়া যায়নি!</p>`;
+                return;
+            }
+            let html = "";
+            videos.forEach(v => {
+                html += `
+                    <div class="video-card">
+                        <div class="video-info">
+                            <img src="${v.thumbnail || 'https://via.placeholder.com/90x60'}" class="video-thumb">
+                            <div class="video-details">
+                                <h4>${v.title}</h4>
+                                <p><b>Category:</b> ${v.category} | <b>Duration:</b> ${v.duration}</p>
+                                <p><b>Views:</b> ${v.views || 0} | <b>Type:</b> ${v.isPremium ? '💎 Premium' : '🆓 Free'}</p>
+                            </div>
+                        </div>
+                        <div class="video-actions">
+                            <button class="btn-edit" onclick="openEdit('${v.id}', '${v.title.replace(/'/g, "\\'")}', '${v.category}', '${v.duration}', '${v.videoUrl}', '${v.thumbnail}', ${v.isPremium})"><i class="fa-solid fa-pen"></i> Edit</button>
+                            <button class="btn-delete" onclick="deleteVideo('${v.id}')"><i class="fa-solid fa-trash"></i> Delete</button>
+                        </div>
+                    </div>
+                `;
+            });
+            listEl.innerHTML = html;
+        }
+
+        // সার্চ এবং ফিল্টার লজিক
+        function filterVideos() {
+            const searchText = document.getElementById('searchInput').value.toLowerCase();
+            const selectedCategory = document.getElementById('categoryFilter').value;
+
+            const filtered = allVideosData.filter(v => {
+                const matchesSearch = v.title.toLowerCase().includes(searchText);
+                const matchesCategory = (selectedCategory === 'all' || v.category.toLowerCase() === selectedCategory);
+                return matchesSearch && matchesCategory;
+            });
+
+            displayVideos(filtered);
+        }
+
+        // ভিডিও ডিলিট
+        async function deleteVideo(id) {
+            if(confirm("সত্যিই কি এই ভিডিওটি ডিলিট করতে চাও?")) {
+                try {
+                    await db.collection("videos").doc(id).delete();
+                    alert("ভিডিও সফলভাবে ডিলিট হয়েছে!");
+                } catch(e) {
+                    alert("ডিলিট করতে সমস্যা হয়েছে: " + e.message);
+                }
+            }
+        }
+
+        // এডিট মোডাল ওপেন
+        function openEdit(id, title, category, duration, videoUrl, thumbnail, isPremium) {
+            document.getElementById('editId').value = id;
+            document.getElementById('editTitle').value = title;
+            document.getElementById('editCategory').value = category;
+            document.getElementById('editDuration').value = duration;
+            document.getElementById('editVideoUrl').value = videoUrl;
+            document.getElementById('editThumbnail').value = thumbnail;
+            document.getElementById('editIsPremium').checked = isPremium;
+            document.getElementById('editModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        // আপডেট সেভ
+        document.getElementById('updateBtn').onclick = async () => {
+            const id = document.getElementById('editId').value;
+            const title = document.getElementById('editTitle').value.trim();
+            const category = document.getElementById('editCategory').value.trim();
+            const duration = document.getElementById('editDuration').value.trim();
+            const videoUrl = document.getElementById('editVideoUrl').value.trim();
+            const thumbnail = document.getElementById('editThumbnail').value.trim();
+            const isPremium = document.getElementById('editIsPremium').checked;
+
+            if(!title || !videoUrl || !thumbnail) {
+                alert("সব ফিল্ড পূরণ করা আবশ্যক!");
+                return;
+            }
+
+            try {
+                await db.collection("videos").doc(id).update({
+                    title,
+                    category: category.toLowerCase(),
+                    duration,
+                    videoUrl,
+                    thumbnail,
+                    isPremium
+                });
+                alert("ভিডিও সফলভাবে আপডেট হয়েছে ✅");
+                closeModal();
+            } catch(e) {
+                alert("আপডেট করতে সমস্যা হয়েছে: " + e.message);
+            }
+        };
+    </script>
+</body>
+</html>
