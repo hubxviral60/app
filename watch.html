@@ -16,9 +16,48 @@
         *{margin:0;padding:0;box-sizing:border-box;font-family:Roboto,Arial,sans-serif}
         body{background:#0f0f0f;color:#fff;padding-bottom:70px}
         
-        .player-container{width:100%;aspect-ratio:16/9;background:#000;display:flex;align-items:center;justify-content:center}
+        .player-container{width:100%;aspect-ratio:16/9;background:#000;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
         .player-container video{width:100%;height:100%;object-fit:contain}
         
+        /* ভিডিও ওভারলে অ্যাড ও স্কিপ বাটন স্টাইল */
+        #videoOverlayAd {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .skip-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(50, 50, 50, 0.8);
+            color: #fff;
+            border: 1px solid #777;
+            padding: 6px 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            display: none;
+            z-index: 101;
+        }
+
+        .skip-btn.active {
+            background: #ff0000;
+            border-color: #ff0000;
+            cursor: pointer;
+        }
+
         .video-info{padding:16px}
         .video-title{font-size:18px;font-weight:600;margin-bottom:8px}
         .video-meta{font-size:14px;color:#aaa;display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
@@ -29,6 +68,16 @@
         .action-btn.active-like{background:#ff0000;color:#fff}
         .action-btn.active-dislike{background:#cc0000;color:#fff}
         
+        /* Native Ad Box Styling */
+        .native-ad-card {
+            background: #141414;
+            margin: 16px 0;
+            padding: 12px;
+            border-bottom: 1px solid #222;
+            border-top: 1px solid #222;
+            text-align: center;
+        }
+
         .related-title{padding:16px;font-size:16px;font-weight:600;border-top:1px solid #222}
         .related-item{display:flex;gap:12px;padding:10px 16px;cursor:pointer;align-items:center}
         .related-item:hover{background:#1a1a1a}
@@ -43,8 +92,28 @@
 </head>
 <body>
 
-    <div class="player-container" id="player">
-        <p style="color:#aaa;">Loading video...</p>
+    <div class="player-container" id="playerContainer">
+        <!-- স্কিপ বাটন -->
+        <button id="skipBtn" class="skip-btn" onclick="skipOverlayAd()">অপেক্ষা করুন (<span id="countdown">10</span>s)</button>
+        
+        <!-- ভিডিও ওভারলে ব্যানার অ্যাড -->
+        <div id="videoOverlayAd">
+            <p style="color:#aaa; margin-bottom: 8px; font-size: 12px;">বিজ্ঞাপন</p>
+            <script>
+              atOptions = {
+                'key' : '4e1a56763ab45e4295c4a7c54f18f24c',
+                'format' : 'iframe',
+                'height' : 250,
+                'width' : 300,
+                'params' : {}
+              };
+            </script>
+            <script src="https://unsettledradiator.com/4e1a56763ab45e4295c4a7c54f18f24c/invoke.js"></script>
+        </div>
+
+        <div id="player" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center;">
+            <p style="color:#aaa;">Loading video...</p>
+        </div>
     </div>
 
     <div class="video-info">
@@ -63,6 +132,11 @@
                 <i class="fa-solid fa-share"></i> Share
             </button>
         </div>
+    </div>
+
+    <!-- নেটিভ অ্যাড কন্টেইনার (ভিডিও ইনফো ও রিলেটেড ভিডিওর মাঝখানে) -->
+    <div class="native-ad-card">
+        <div id="container-d00583cb02481efc137f3bd306146fa4"></div>
     </div>
 
     <div class="related-title">Related Videos</div>
@@ -109,34 +183,117 @@
             });
 
         let currentUserId = null;
+        let isUserPremium = false;
+        let videoDetails = null;
+
         const urlParams = new URLSearchParams(window.location.search);
         const videoId = urlParams.get('id');
 
+        // ১০ সেকেন্ডের কাউন্টডাউন টাইমার ফাংশন
+        function startAdTimer() {
+            let timeLeft = 10;
+            const countdownElem = document.getElementById('countdown');
+            const skipBtn = document.getElementById('skipBtn');
+            
+            skipBtn.style.display = 'block';
+
+            let timer = setInterval(() => {
+                timeLeft--;
+                if (countdownElem) countdownElem.innerText = timeLeft;
+
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    skipBtn.innerHTML = 'Skip Ad <i class="fa-solid fa-forward"></i>';
+                    skipBtn.classList.add('active');
+                }
+            }, 1000);
+        }
+
+        function skipOverlayAd() {
+            const skipBtn = document.getElementById('skipBtn');
+            if (!skipBtn.classList.contains('active')) return;
+
+            document.getElementById('videoOverlayAd').style.display = 'none';
+            skipBtn.style.display = 'none';
+
+            if (videoDetails) {
+                renderVideoData(videoDetails);
+            }
+        }
+
+        // ইউজার অথেন্টিকেশন এবং সাবস্ক্রিপশন চেক
         auth.onAuthStateChanged((user) => {
             if (user && !user.isAnonymous) {
                 currentUserId = user.uid;
-                if (videoId) checkUserInteraction(videoId, currentUserId);
+                checkUserSubscription(() => {
+                    if (videoId) {
+                        checkVideoAccessAndLoad();
+                        checkUserInteraction(videoId, currentUserId);
+                    }
+                });
             } else {
                 currentUserId = null;
+                isUserPremium = false;
+                handleUnauthorizedAccess("ভিডিও দেখতে হলে আপনাকে প্রথমে টাস্ক কমপ্লিট করে প্রিমিয়াম আনলক করতে হবে অথবা লগইন করতে হবে।");
             }
         });
 
-        if (videoId) {
-            // Fetch Current Video Data
+        function checkUserSubscription(callback) {
+            if (!currentUserId) return;
+            db.collection("users").doc(currentUserId).get().then(doc => {
+                if(doc.exists) {
+                    const data = doc.data();
+                    const premiumUntil = data.premiumUntil ? data.premiumUntil.toDate() : null;
+                    const now = new Date();
+
+                    if(premiumUntil && premiumUntil > now) {
+                        isUserPremium = true;
+                    } else {
+                        isUserPremium = false;
+                    }
+                } else {
+                    isUserPremium = false;
+                }
+                if(callback) callback();
+            }).catch(err => {
+                console.error("Subscription check error:", err);
+                isUserPremium = false;
+                if(callback) callback();
+            });
+        }
+
+        function handleUnauthorizedAccess(message) {
+            Swal.fire({
+                title: 'অ্যাক্সেস সীমিত!',
+                text: message,
+                icon: 'warning',
+                background: '#1a1a1a',
+                color: '#fff',
+                confirmButtonColor: '#ff0000',
+                confirmButtonText: 'টাস্ক পেজে যান',
+                allowOutsideClick: false
+            }).then((result) => {
+                location.href = "task.html";
+            });
+        }
+
+        function checkVideoAccessAndLoad() {
+            if (!videoId) {
+                document.getElementById('player').innerHTML = `<p style="color:#ff3b30;">ভিডিও আইডি পাওয়া যায়নি!</p>`;
+                return;
+            }
+
             db.collection("videos").doc(videoId).get().then(doc => {
                 if(doc.exists) {
-                    const v = doc.data();
-                    document.getElementById('title').innerText = v.title || "Untitled";
-                    document.getElementById('views').innerText = (v.views || 0) + " views";
-                    document.getElementById('likeCount').innerText = v.likes || 0;
-                    document.getElementById('dislikeCount').innerText = v.dislikes || 0;
+                    videoDetails = doc.data();
                     
-                    const videoSrc = v.videoUrl || v.url;
-                    if(videoSrc) {
-                        document.getElementById('player').innerHTML = `<video src="${videoSrc}" controls autoplay></video>`;
-                    } else {
-                        document.getElementById('player').innerHTML = `<p style="color:#ff3b30;">ভিডিওর লিংক পাওয়া যায়নি!</p>`;
+                    if (!isUserPremium) {
+                        handleUnauthorizedAccess("এই ভিডিওটি দেখতে হলে আপনাকে অবশ্যই টাস্ক কমপ্লিট করে প্রিমিয়াম টাইম একটিভ করতে হবে।");
+                        return;
                     }
+
+                    // প্রিমিয়াম ইউজার হলে ওভারলে অ্যাড টাইমার চালু হবে
+                    startAdTimer();
 
                     // Increment View Count
                     db.collection("videos").doc(videoId).update({
@@ -148,6 +305,20 @@
             }).catch(err => {
                 console.error(err);
             });
+        }
+
+        function renderVideoData(v) {
+            document.getElementById('title').innerText = v.title || "Untitled";
+            document.getElementById('views').innerText = (v.views || 0) + " views";
+            document.getElementById('likeCount').innerText = v.likes || 0;
+            document.getElementById('dislikeCount').innerText = v.dislikes || 0;
+            
+            const videoSrc = v.videoUrl || v.url;
+            if(videoSrc) {
+                document.getElementById('player').innerHTML = `<video src="${videoSrc}" controls autoplay></video>`;
+            } else {
+                document.getElementById('player').innerHTML = `<p style="color:#ff3b30;">ভিডিওর লিংক পাওয়া যায়নি!</p>`;
+            }
         }
 
         // Load Related Videos
@@ -294,5 +465,9 @@
             }
         }
     </script>
+
+    <!-- নেটিভ অ্যাড এক্সটার্নাল স্ক্রিপ্টসমূহ -->
+    <script src="https://unsettledradiator.com/bb/af/62/bbaf623bd005ed758480b20d81e44d2c.js"></script>
+    <script async="async" data-cfasync="false" src="https://unsettledradiator.com/d00583cb02481efc137f3bd306146fa4/invoke.js"></script>
 </body>
 </html>
