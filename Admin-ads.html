@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Adsterra Ads - HubX Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:Inter,sans-serif}
+        body{background:#f5f5f7;color:#111;display:none}
+        .admin-header{height:65px;background:#fff;border-bottom:1px solid #e5e5e5;display:flex;justify-content:space-between;align-items:center;padding:0 25px;position:sticky;top:0;z-index:100}
+        .admin-logo{font-weight:900;font-size:18px;text-decoration:none;color:#111}.admin-logo span{color:#ff0000}
+        #logoutBtn{background:#111;color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer}
+        .container{max-width:800px;margin:0 auto;padding:25px}
+        .back-btn{display:inline-flex;align-items:center;gap:6px;text-decoration:none;color:#555;margin-bottom:20px;font-size:14px;font-weight:600}
+        .back-btn:hover{color:#111}
+        .ads-box{background:#fff;padding:30px;border-radius:20px;border:1px solid #eee}
+        .ads-box h2{font-size:20px;margin-bottom:20px;display:flex;align-items:center;gap:10px}
+        .form-group{margin-bottom:15px}
+        .form-group label{font-size:13px;font-weight:600;color:#555;margin-bottom:6px;display:block}
+        .form-group input{width:100%;padding:12px 15px;border:1px solid #ddd;border-radius:10px;outline:none;font-size:14px}
+        #saveAdsBtn{width:100%;padding:14px;background:#111;color:#fff;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-size:15px;margin-top:15px}
+        #saveAdsBtn:hover{background:#333}
+        #msg{margin-top:15px;padding:12px;border-radius:8px;font-size:13px;text-align:center;display:none}
+        .success{background:#eafff0;color:#00a344}.error{background:#ffeaea;color:#ff0000}
+    </style>
+</head>
+<body>
+    <header class="admin-header">
+        <a href="admin-dashboard.html" class="admin-logo"><span>HUBX</span> ADMIN</a>
+        <button id="logoutBtn">Logout</button>
+    </header>
+
+    <div class="container">
+        <a href="admin-dashboard.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</a>
+        
+        <div class="ads-box">
+            <h2><i class="fa-solid fa-rectangle-ad"></i> Adsterra Direct Links (7 Slots)</h2>
+            
+            <div class="form-group"><label>Adsterra Link 1</label><input type="url" id="ad1" placeholder="https://www.highperformanceformat.com/..."></div>
+            <div class="form-group"><label>Adsterra Link 2</label><input type="url" id="ad2" placeholder="https://www.highperformanceformat.com/..."></div>
+            <div class="form-group"><label>Adsterra Link 3</label><input type="url" id="ad3" placeholder="https://www.highperformanceformat.com/..."></div>
+            <div class="form-group"><label>Adsterra Link 4</label><input type="url" id="ad4" placeholder="https://www.highperformanceformat.com/..."></div>
+            <div class="form-group"><label>Adsterra Link 5</label><input type="url" id="ad5" placeholder="https://www.highperformanceformat.com/..."></div>
+            <div class="form-group"><label>Adsterra Link 6</label><input type="url" id="ad6" placeholder="https://www.highperformanceformat.com/..."></div>
+            <div class="form-group"><label>Adsterra Link 7</label><input type="url" id="ad7" placeholder="https://www.highperformanceformat.com/..."></div>
+
+            <button id="saveAdsBtn">Save Ad Links</button>
+            <div id="msg"></div>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = { apiKey: "AIzaSyBQu8cmBIEsSBIsvSsvXH3jGYjopWnf5pM", authDomain: "hubx-viral.firebaseapp.com", projectId: "hubx-viral", storageBucket: "hubx-viral.firebasestorage.app", messagingSenderId: "694752071521", appId: "1:694752071521:web:79603b500368f90070ff20" };
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // 🛡️ সিকিউরিটি: অ্যাডমিন অথেন্টিকেশন ও রোল চেক
+        firebase.auth().onAuthStateChanged((user) => {
+            if (!user) { location.href = "admin-login.html"; return; }
+            db.collection('admins').doc(user.uid).get().then(doc => {
+                if(doc.exists && doc.data().role === "admin") {
+                    document.body.style.display = "block";
+                    loadExistingAds();
+                } else {
+                    location.href = "admin-login.html";
+                }
+            }).catch(() => { location.href = "admin-login.html"; });
+        });
+
+        document.getElementById('logoutBtn').onclick = () => firebase.auth().signOut().then(() => location.href="admin-login.html");
+
+        // ডাটাবেজ থেকে পূর্বের লিংকগুলো লোড করা
+        async function loadExistingAds() {
+            try {
+                const doc = await db.collection("settings").doc("adsterra_links").get();
+                if(doc.exists) {
+                    const data = doc.data();
+                    for(let i = 1; i <= 7; i++) {
+                        if(data[`ad${i}`]) {
+                            document.getElementById(`ad${i}`).value = data[`ad${i}`];
+                        }
+                    }
+                }
+            } catch(e) {
+                console.error("Error loading ads:", e);
+            }
+        }
+
+        // লিংকগুলো সেভ বা আপডেট করা
+        document.getElementById('saveAdsBtn').onclick = async () => {
+            const btn = document.getElementById('saveAdsBtn');
+            btn.disabled = true;
+            btn.innerText = "Saving...";
+
+            const adsData = {};
+            for(let i = 1; i <= 7; i++) {
+                adsData[`ad${i}`] = document.getElementById(`ad${i}`).value.trim();
+            }
+
+            try {
+                // 'settings' কালেকশনের 'adsterra_links' ডকুমেন্টে সব লিংক সেভ হবে
+                await db.collection("settings").doc("adsterra_links").set(adsData, { merge: true });
+                showMsg("সকল অ্যাড লিংক সফলভাবে সেভ হয়েছে ✅", "success");
+            } catch(e) {
+                showMsg("সমস্যা হয়েছে: " + e.message, "error");
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Save Ad Links";
+            }
+        };
+
+        function showMsg(t, type){ 
+            const m = document.getElementById('msg'); 
+            m.style.display = "block"; 
+            m.className = type; 
+            m.innerText = t; 
+        }
+    </script>
+</body>
+</html>
