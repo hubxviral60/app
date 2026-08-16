@@ -175,10 +175,14 @@
                         document.getElementById('premiumExpiryVal').innerText = "প্রযোজ্য নয়";
                     }
 
+                    // completedAds অথবা completedTasks উভয় ফিল্ড হ্যান্ডেল করার লজিক
                     let completedCount = 0;
-                    if (data.completedTasks && Array.isArray(data.completedTasks)) {
+                    if (data.completedAds && Array.isArray(data.completedAds)) {
+                        completedCount = data.completedAds.length;
+                    } else if (data.completedTasks && Array.isArray(data.completedTasks)) {
                         completedCount = data.completedTasks.length;
                     }
+                    
                     document.getElementById('taskProgressVal').innerText = `${completedCount} / 7 Completed`;
                 }
             });
