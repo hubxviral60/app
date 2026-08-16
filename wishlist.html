@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wishlist - HubX Viral</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- SweetAlert2 CSS & JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Firebase App, Auth & Firestore Compat Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:Roboto,Arial,sans-serif}
+        body{background:#0f0f0f;color:#fff;padding-bottom:70px}
+        #mainHeader{position:sticky;top:0;z-index:100;display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:#0f0f0f;border-bottom:1px solid #303030}
+        .logo{font-size:20px;font-weight:900}.logo span{background:#ff0000;padding:2px 6px;border-radius:4px;margin-right:4px}
+        #premiumStatus{background:#272727;padding:6px 12px;border-radius:20px;font-size:12px;cursor:pointer}
+        
+        .page-title{padding:16px 16px 8px;font-size:18px;font-weight:600;border-bottom:1px solid #222}
+
+        #videoFeed{display:flex;flex-direction:column;margin-top:10px}
+        .video-card{background:#0f0f0f;margin-bottom:16px;color:#fff;display:block;border-bottom:1px solid #1a1a1a;padding-bottom:12px}
+        .thumbnail-container{position:relative;width:100%;aspect-ratio:16/9;background:#1a1a1a;overflow:hidden;cursor:pointer}
+        .thumbnail-container img{width:100%;height:100%;object-fit:cover}
+        .duration{position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,0.8);padding:2px 6px;font-size:12px;border-radius:4px}
+        
+        /* Video Info and Wishlist Heart Icon */
+        .video-details-box{padding:12px 16px;display:flex;justify-content:space-between;align-items:flex-start}
+        .video-text-info{cursor:pointer;flex:1}
+        .video-title{font-size:16px;font-weight:500;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+        .video-meta{font-size:13px;color:#aaa;margin-top:4px}
+        
+        .wishlist-btn{background:none;border:none;color:#ff0055;font-size:20px;cursor:pointer;padding:4px 8px;transition:0.2s}
+        .wishlist-btn:hover{color:#fff}
+        
+        #bottomNav{position:fixed;bottom:0;left:0;width:100%;height:65px;background:#212121;border-top:1px solid #303030;display:flex;justify-content:space-around;align-items:center;z-index:200}
+        .nav-item{background:none;border:none;color:#aaa;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:10px;cursor:pointer;flex:1;padding:8px 0;text-decoration:none}
+        .nav-item i{font-size:20px}.nav-item.active{color:#fff}
+    </style>
+</head>
+<body>
+
+    <header id="mainHeader">
+        <div class="logo"><span>HUBX</span> VIRAL</div>
+        <div id="premiumStatus" onclick="location.href='task.html'"><i class="fa-solid fa-lock"></i> Free User</div>
+    </header>
+
+    <div class="page-title"><i class="fa-solid fa-heart" style="color:#ff0055; margin-right:6px;"></i> আমার পছন্দের ভিডিও (Wishlist)</div>
+
+    <main id="mainContent">
+        <div id="videoFeed">
+            <p style="text-align:center; padding:50px; color:#666;">Loading wishlist...</p>
+        </div>
+    </main>
+
+    <!-- Bottom Navigation -->
+    <nav id="bottomNav">
+        <a href="index.html" class="nav-item">
+            <i class="fa-solid fa-house"></i>
+            <span>Home</span>
+        </a>
+        <a href="wishlist.html" class="nav-item active">
+            <i class="fa-solid fa-heart"></i>
+            <span>Wishlist</span>
+        </a>
+        <a href="task.html" class="nav-item">
+            <i class="fa-solid fa-list-check"></i>
+            <span>Task</span>
+        </a>
+        <a href="profile.html" class="nav-item">
+            <i class="fa-solid fa-user"></i>
+            <span>Profile</span>
+        </a>
+    </nav>
+
+    <!-- Firebase Initialization & Logic Script -->
+    <script>
+        const firebaseConfig = { 
+            apiKey: "AIzaSyBQu8cmBIEsSBIsvSsvXH3jGYjopWnf5pM", 
+            authDomain: "hubx-viral.firebaseapp.com", 
+            projectId: "hubx-viral", 
+            storageBucket: "hubx-viral.firebasestorage.app", 
+            messagingSenderId: "694752071521", 
+            appId: "1:694752071521:web:79603b500368f90070ff20" 
+        };
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        // লগইন স্ট্যাটাস ব্রাউজারে স্থায়ীভাবে ধরে রাখার জন্য পার্সিস্টেন্স সেট করা হলো
+        auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+            .catch((error) => {
+                console.error("Persistence error:", error);
+            });
+
+        let currentUserId = null;
+        let isUserPremium = false;
+        let wishlistVideoIds = [];
+        let allVideosMap = {};
+        let wishlistUnsubscribe = null;
+
+        // ফায়ারবেস অথ স্টেট ট্র্যাক করা
+        auth.onAuthStateChanged((user) => {
+            if (user && !user.isAnonymous) {
+                currentUserId = user.uid;
+                checkUserSubscription();
+                loadWishlistAndVideos();
+            } else {
+                currentUserId = null;
+                isUserPremium = false;
+                wishlistVideoIds = [];
+                if (wishlistUnsubscribe) wishlistUnsubscribe();
+                
+                document.getElementById('premiumStatus').innerHTML = `<i class="fa-solid fa-lock"></i> Login Required`;
+                document.getElementById('videoFeed').innerHTML = `
+                    <div style="text-align:center; padding:50px 20px;">
+                        <p style="color:#aaa; font-size:15px; margin-bottom:15px;">আপনার উইশলিস্ট দেখতে দয়া করে লগইন করুন।</p>
+                        <a href="login.html" style="background:#ff0000; color:#fff; padding:10px 20px; border-radius:8px; text-decoration:none; font-weight:600;">লগইন করুন</a>
+                    </div>
+                `;
+            }
+        });
+
+        // ইউজারের প্রিমিয়াম স্ট্যাটাস চেক করা
+        function checkUserSubscription() {
+            if (!currentUserId) return;
+            db.collection("users").doc(currentUserId).onSnapshot(doc => {
+                if(doc.exists) {
+                    const data = doc.data();
+                    const premiumUntil = data.premiumUntil ? data.premiumUntil.toDate() : null;
+                    const now = new Date();
+
+                    if(premiumUntil && premiumUntil > now) {
+                        isUserPremium = true;
+                        document.getElementById('premiumStatus').innerHTML = `<i class="fa-solid fa-crown" style="color:#ffcc00;"></i> Premium Active`;
+                        document.getElementById('premiumStatus').style.background = "#332b00";
+                    } else {
+                        isUserPremium = false;
+                        document.getElementById('premiumStatus').innerHTML = `<i class="fa-solid fa-lock"></i> Free User (Unlock)`;
+                        document.getElementById('premiumStatus').style.background = "#272727";
+                    }
+                }
+            });
+        }
+
+        // উইশলিস্ট এবং মূল ভিডিও ডাটা একসাথে লোড করা
+        function loadWishlistAndVideos() {
+            db.collection("videos").get().then((snapshot) => {
+                allVideosMap = {};
+                snapshot.forEach((doc) => {
+                    allVideosMap[doc.id] = { id: doc.id, ...doc.data() };
+                });
+
+                // ইউজারের উইশলিস্ট লাইভ ট্র্যাক করা
+                if (wishlistUnsubscribe) wishlistUnsubscribe();
+                
+                wishlistUnsubscribe = db.collection("users").doc(currentUserId).collection("wishlist")
+                  .onSnapshot((wishSnapshot) => {
+                      wishlistVideoIds = [];
+                      wishSnapshot.forEach((doc) => {
+                          wishlistVideoIds.push(doc.id);
+                      });
+                      renderWishlist();
+                  });
+            }).catch((error) => {
+                console.error("Error loading videos:", error);
+                document.getElementById('videoFeed').innerHTML = `<p style="text-align:center; padding:50px; color:#ff3b30;">ডাটা লোড করতে সমস্যা হয়েছে!</p>`;
+            });
+        }
+
+        // ভিডিও লিংকে ক্লিক করার ফাংশন
+        function handleVideoClick(videoId) {
+            if (isUserPremium) {
+                location.href = `watch.html?id=${videoId}`;
+            } else {
+                Swal.fire({
+                    title: 'প্রিমিয়াম লক করা আছে!',
+                    text: 'এই ভিডিওটি দেখতে হলে স্পন্সরদের সাপোর্ট করে ১ দিনের প্রিমিয়াম আনলক করুন।',
+                    icon: 'warning',
+                    background: '#1a1a1a',
+                    color: '#fff',
+                    confirmButtonColor: '#ff0000',
+                    confirmButtonText: 'টাস্ক পেজে যান',
+                    showCancelButton: true,
+                    cancelButtonText: 'বাতিল',
+                    cancelButtonColor: '#333'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        location.href = "task.html";
+                    }
+                });
+            }
+        }
+
+        // উইশলিস্ট থেকে ভিডিও রিমুভ করা
+        async function removeFromWishlist(videoId, event) {
+            event.stopPropagation();
+            if (!currentUserId) return;
+
+            try {
+                await db.collection("users").doc(currentUserId).collection("wishlist").doc(videoId).delete();
+            } catch (e) {
+                console.error("Error removing from wishlist:", e);
+            }
+        }
+
+        // উইশলিস্ট রেন্ডার করা
+        function renderWishlist() {
+            const videoFeed = document.getElementById('videoFeed');
+
+            if (wishlistVideoIds.length === 0) {
+                videoFeed.innerHTML = `<p style="text-align:center; padding:50px; color:#777;">আপনার উইশলিস্টে কোনো ভিডিও নেই!</p>`;
+                return;
+            }
+
+            let html = "";
+            wishlistVideoIds.forEach(id => {
+                const v = allVideosMap[id];
+                if (v) {
+                    html += `
+                        <div class="video-card">
+                            <div class="thumbnail-container" onclick="handleVideoClick('${v.id}')">
+                                <img src="${v.thumbnail || 'https://via.placeholder.com/640x360'}" alt="Thumbnail">
+                                <span class="duration">${v.duration || '0:00'}</span>
+                            </div>
+                            <div class="video-details-box">
+                                <div class="video-text-info" onclick="handleVideoClick('${v.id}')">
+                                    <h3 class="video-title">${v.title}</h3>
+                                    <div class="video-meta">
+                                        <span>${v.category || 'General'}</span> • 
+                                        <span>${v.views || 0} views</span> 
+                                        ${v.isPremium ? ' • <span style="color:#ffcc00">💎 Premium</span>' : ''}
+                                    </div>
+                                </div>
+                                <button class="wishlist-btn" onclick="removeFromWishlist('${v.id}', event)" title="Remove from Wishlist">
+                                    <i class="fa-solid fa-heart"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+
+            videoFeed.innerHTML = html;
+        }
+    </script>
+</body>
+</html>
