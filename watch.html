@@ -24,8 +24,10 @@
         .video-meta{font-size:14px;color:#aaa;display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
         
         .action-bar{display:flex;gap:15px;margin-bottom:16px;overflow-x:auto;padding-bottom:4px}
-        .action-btn{background:#272727;border:none;color:#fff;padding:8px 16px;border-radius:20px;cursor:pointer;font-size:14px;display:flex;align-items:center;gap:6px;white-space:nowrap}
+        .action-btn{background:#272727;border:none;color:#fff;padding:8px 16px;border-radius:20px;cursor:pointer;font-size:14px;display:flex;align-items:center;gap:6px;white-space:nowrap;transition:0.2s}
         .action-btn:hover{background:#3f3f3f}
+        .action-btn.active-like{background:#ff0000;color:#fff}
+        .action-btn.active-dislike{background:#cc0000;color:#fff}
         
         .related-title{padding:16px;font-size:16px;font-weight:600;border-top:1px solid #222}
         .related-item{display:flex;gap:12px;padding:10px 16px;cursor:pointer;align-items:center}
@@ -51,10 +53,10 @@
             <span id="views">0 views</span>
         </div>
         <div class="action-bar">
-            <button class="action-btn" onclick="interact('likes')">
+            <button class="action-btn" id="likeBtn" onclick="interact('likes')">
                 <i class="fa-solid fa-thumbs-up"></i> <span id="likeCount">0</span>
             </button>
-            <button class="action-btn" onclick="interact('dislikes')">
+            <button class="action-btn" id="dislikeBtn" onclick="interact('dislikes')">
                 <i class="fa-solid fa-thumbs-down"></i> <span id="dislikeCount">0</span>
             </button>
             <button class="action-btn" onclick="shareVideo()">
@@ -101,28 +103,26 @@
         const db = firebase.firestore();
         const auth = firebase.auth();
 
-        // লগইন স্ট্যাটাস ব্রাউজারে স্থায়ীভাবে ধরে রাখার জন্য পার্সিস্টেন্স সেট করা হলো
         auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
             .catch((error) => {
                 console.error("Persistence error:", error);
             });
 
         let currentUserId = null;
+        const urlParams = new URLSearchParams(window.location.search);
+        const videoId = urlParams.get('id');
 
-        // ফায়ারবেস অথ স্টেট ট্র্যাক করা
         auth.onAuthStateChanged((user) => {
             if (user && !user.isAnonymous) {
                 currentUserId = user.uid;
+                if (videoId) checkUserInteraction(videoId, currentUserId);
             } else {
                 currentUserId = null;
             }
         });
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const videoId = urlParams.get('id');
-
         if (videoId) {
-            // Fetch Current Video Data (লগইন করা না থাকলেও ভিডিও দেখতে পারবে)
+            // Fetch Current Video Data
             db.collection("videos").doc(videoId).get().then(doc => {
                 if(doc.exists) {
                     const v = doc.data();
@@ -131,7 +131,6 @@
                     document.getElementById('likeCount').innerText = v.likes || 0;
                     document.getElementById('dislikeCount').innerText = v.dislikes || 0;
                     
-                    // Check for 'videoUrl' from Firestore
                     const videoSrc = v.videoUrl || v.url;
                     if(videoSrc) {
                         document.getElementById('player').innerHTML = `<video src="${videoSrc}" controls autoplay></video>`;
@@ -171,7 +170,21 @@
             document.getElementById('relatedFeed').innerHTML = html;
         });
 
-        // Like / Dislike Interaction (লগইন চেক সহ)
+        // Check if user already liked/disliked
+        function checkUserInteraction(vId, uId) {
+            db.collection("videos").doc(vId).collection("interactions").doc(uId).get().then(doc => {
+                if (doc.exists) {
+                    const type = doc.data().type;
+                    if (type === 'likes') {
+                        document.getElementById('likeBtn').classList.add('active-like');
+                    } else if (type === 'dislikes') {
+                        document.getElementById('dislikeBtn').classList.add('active-dislike');
+                    }
+                }
+            });
+        }
+
+        // Like / Dislike Interaction without Page Reload
         function interact(type) {
             if(!videoId) return;
 
@@ -195,10 +208,76 @@
                 return;
             }
 
-            db.collection("videos").doc(videoId).update({
-                [type]: firebase.firestore.FieldValue.increment(1)
-            }).then(() => {
-                location.reload();
+            const videoRef = db.collection("videos").doc(videoId);
+            const interactionRef = videoRef.collection("interactions").doc(currentUserId);
+
+            const likeBtn = document.getElementById('likeBtn');
+            const dislikeBtn = document.getElementById('dislikeBtn');
+            const likeCountElem = document.getElementById('likeCount');
+            const dislikeCountElem = document.getElementById('dislikeCount');
+
+            let currentLikes = parseInt(likeCountElem.innerText) || 0;
+            let currentDislikes = parseInt(dislikeCountElem.innerText) || 0;
+
+            interactionRef.get().then(doc => {
+                let batch = db.batch();
+                
+                if (doc.exists) {
+                    const existingType = doc.data().type;
+                    if (existingType === type) {
+                        batch.update(videoRef, {
+                            [type]: firebase.firestore.FieldValue.increment(-1)
+                        });
+                        batch.delete(interactionRef);
+
+                        return batch.commit().then(() => {
+                            if (type === 'likes') {
+                                likeBtn.classList.remove('active-like');
+                                likeCountElem.innerText = Math.max(0, currentLikes - 1);
+                            } else {
+                                dislikeBtn.classList.remove('active-dislike');
+                                dislikeCountElem.innerText = Math.max(0, currentDislikes - 1);
+                            }
+                        });
+                    } else {
+                        batch.update(videoRef, {
+                            [existingType]: firebase.firestore.FieldValue.increment(-1),
+                            [type]: firebase.firestore.FieldValue.increment(1)
+                        });
+                        batch.set(interactionRef, { type: type });
+
+                        return batch.commit().then(() => {
+                            if (type === 'likes') {
+                                likeBtn.classList.add('active-like');
+                                dislikeBtn.classList.remove('active-dislike');
+                                likeCountElem.innerText = currentLikes + 1;
+                                dislikeCountElem.innerText = Math.max(0, currentDislikes - 1);
+                            } else {
+                                dislikeBtn.classList.add('active-dislike');
+                                likeBtn.classList.remove('active-like');
+                                dislikeCountElem.innerText = currentDislikes + 1;
+                                likeCountElem.innerText = Math.max(0, currentLikes - 1);
+                            }
+                        });
+                    }
+                } else {
+                    batch.update(videoRef, {
+                        [type]: firebase.firestore.FieldValue.increment(1)
+                    });
+                    batch.set(interactionRef, { type: type });
+
+                    return batch.commit().then(() => {
+                        if (type === 'likes') {
+                            likeBtn.classList.add('active-like');
+                            likeCountElem.innerText = currentLikes + 1;
+                        } else {
+                            dislikeBtn.classList.add('active-dislike');
+                            dislikeCountElem.innerText = currentDislikes + 1;
+                        }
+                    });
+                }
+            }).catch(err => {
+                console.error("Interaction error: ", err);
             });
         }
 
