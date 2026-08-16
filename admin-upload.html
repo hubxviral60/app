@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Video - HubX Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:Inter,sans-serif}
+        body{background:#f5f5f7;color:#111}
+        .admin-header{height:65px;background:#fff;border-bottom:1px solid #e5e5e5;display:flex;justify-content:space-between;align-items:center;padding:0 25px;position:sticky;top:0}
+        .admin-logo{font-weight:900;font-size:18px;text-decoration:none;color:#111}.admin-logo span{color:#ff0000}
+        #logoutBtn{background:#111;color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer}
+        .container{max-width:700px;margin:0 auto;padding:25px}
+        .back-btn{display:inline-flex;align-items:center;gap:6px;text-decoration:none;color:#555;margin-bottom:20px;font-size:14px;font-weight:600}
+        .back-btn:hover{color:#111}
+        .upload-box{background:#fff;padding:30px;border-radius:20px;border:1px solid #eee}
+        .form-group{margin-bottom:18px}
+        .form-group label{font-size:13px;font-weight:600;color:#555;margin-bottom:8px;display:block}
+        .form-group input[type=text], .form-group input[type=url]{width:100%;padding:13px 15px;border:1px solid #ddd;border-radius:10px;outline:none}
+        .file-input{width:100%;padding:12px;border:1.5px dashed #ccc;border-radius:12px;background:#fafafa}
+        .preview{margin-top:10px;display:none}.preview img{width:100%;border-radius:10px;max-height:200px;object-fit:cover}
+        #uploadBtn{width:100%;padding:14px;background:#111;color:#fff;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-size:15px;margin-top:10px}
+        #msg{margin-top:15px;padding:12px;border-radius:8px;font-size:13px;text-align:center;display:none}
+        .success{background:#eafff0;color:#00a344}.error{background:#ffeaea;color:#ff0000}
+    </style>
+</head>
+<body>
+    <header class="admin-header">
+        <a href="admin-dashboard.html" class="admin-logo"><span>HUBX</span> ADMIN</a>
+        <button id="logoutBtn">Logout</button>
+    </header>
+    <div class="container">
+        <!-- ব্যাক বাটন যুক্ত করা হয়েছে -->
+        <a href="admin-dashboard.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</a>
+        
+        <div class="upload-box">
+            <h2><i class="fa-solid fa-cloud-arrow-up"></i> Manual Video Add</h2>
+            <div class="form-group"><label>Title *</label><input type="text" id="vTitle" placeholder="Viral video title"></div>
+            <div class="form-group"><label>Category *</label><input type="text" id="vCategory" placeholder="viral, funny"></div>
+            <div class="form-group"><label>Duration *</label><input type="text" id="vDuration" placeholder="02:15"></div>
+            <div class="form-group"><label>Video Link * (Direct MP4/Embed Link)</label><input type="url" id="vUrl" placeholder="https://example.com/video.mp4"></div>
+            <div class="form-group"><label>Thumbnail * (ImgBB Auto Upload)</label>
+                <div class="file-input"><input type="file" id="thumbFile" accept="image/*"></div>
+                <div class="preview" id="thumbPreview"></div>
+            </div>
+            <div style="display:flex;gap:10px;margin:15px 0"><input type="checkbox" id="vPremium"><label for="vPremium">Premium?</label></div>
+            <button id="uploadBtn">Save to Firestore</button>
+            <div id="msg"></div>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = { apiKey: "AIzaSyBQu8cmBIEsSBIsvSsvXH3jGYjopWnf5pM", authDomain: "hubx-viral.firebaseapp.com", projectId: "hubx-viral", storageBucket: "hubx-viral.firebasestorage.app", messagingSenderId: "694752071521", appId: "1:694752071521:web:79603b500368f90070ff20" };
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // ImgBB API Key
+        const IMGBB_API_KEY = "acad51a73d1592f857d31925bf4777a1"; 
+
+        document.getElementById('logoutBtn').onclick = () => firebase.auth().signOut().then(() => location.href="admin-login.html");
+
+        thumbFile.onchange = e => { 
+            const f = e.target.files[0]; 
+            if(f){ 
+                thumbPreview.style.display="block"; 
+                thumbPreview.innerHTML=`<img src="${URL.createObjectURL(f)}">`; 
+            } 
+        };
+
+        document.getElementById('uploadBtn').onclick = async () => {
+            const btn = document.getElementById('uploadBtn');
+            const thumb = thumbFile.files[0];
+            const title = vTitle.value.trim(), category = vCategory.value.trim(), duration = vDuration.value.trim(), videoUrl = vUrl.value.trim();
+
+            if(!title || !videoUrl || !thumb || !category || !duration) return showMsg("সবগুলো ফিল্ড পূরণ করা বাধ্যতামূলক!", "error");
+
+            btn.disabled = true;
+            btn.innerText = "Uploading Thumbnail to ImgBB...";
+
+            const fd = new FormData();
+            fd.append('image', thumb);
+            
+            try {
+                const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: 'POST', body: fd });
+                const data = await res.json();
+                if(!data.success) throw new Error("ImgBB Upload Failed");
+                
+                const thumbUrl = data.data.url;
+                btn.innerText = "Saving to Firestore...";
+
+                await db.collection("videos").add({
+                    title, 
+                    category: category.toLowerCase(), 
+                    duration,
+                    thumbnail: thumbUrl,
+                    videoUrl: videoUrl,
+                    isPremium: vPremium.checked,
+                    views: 0,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                showMsg("সফল! ভিডিও এবং থাম্বনেইল সেভ হয়েছে ✅", "success");
+                vTitle.value = ""; vCategory.value = ""; vDuration.value = ""; vUrl.value = ""; thumbFile.value = ""; thumbPreview.style.display = "none"; vPremium.checked = false;
+            } catch(e) { 
+                showMsg(e.message, "error"); 
+            } finally { 
+                btn.disabled = false; 
+                btn.innerText = "Save to Firestore"; 
+            }
+        };
+
+        function showMsg(t, type){ 
+            const m = document.getElementById('msg'); 
+            m.style.display = "block"; 
+            m.className = type; 
+            m.innerText = t; 
+        }
+    </script>
+</body>
+</html>
