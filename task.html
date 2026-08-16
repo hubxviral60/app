@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task - HubX Viral</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- SweetAlert2 CSS & JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Firebase App, Auth & Firestore Compat Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:Roboto,Arial,sans-serif}
+        body{background:#0f0f0f;color:#fff;padding-bottom:80px}
+        
+        .header{padding:16px;text-align:center;background:#181818;border-bottom:1px solid #333}
+        .header h2{font-size:18px;margin-bottom:6px;color:#ffcc00}
+        .header p{font-size:13px;color:#aaa;line-height:1.4}
+        
+        .status-card{margin:16px;background:#212121;padding:16px;border-radius:12px;text-align:center;border:1px solid #333}
+        .status-card h3{font-size:16px;color:#ffcc00;margin-bottom:6px}
+        
+        .task-container{padding:0 16px}
+        .task-item{display:flex;justify-content:space-between;align-items:center;background:#1a1a1a;margin-bottom:12px;padding:14px;border-radius:8px;border:1px solid #2a2a2a}
+        .task-info h4{font-size:15px;margin-bottom:2px}
+        .task-info p{font-size:12px;color:#aaa}
+        
+        .task-btn{background:#ff0000;color:#fff;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:500}
+        .task-btn.completed{background:#272727;color:#aaa;cursor:default}
+        
+        #bottomNav{position:fixed;bottom:0;left:0;width:100%;height:65px;background:#212121;border-top:1px solid #303030;display:flex;justify-content:space-around;align-items:center;z-index:200}
+        .nav-item{background:none;border:none;color:#aaa;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:10px;cursor:pointer;flex:1;padding:8px 0;text-decoration:none}
+        .nav-item i{font-size:20px}
+        .nav-item.active{color:#fff}
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h2><i class="fa-solid fa-heart"></i> স্পন্সরদের সাপোর্ট করুন</h2>
+        <p>আমাদের সাইটটি সচল রাখতে এবং আপনাদের জন্য ফ্রি ভিডিও ও সার্ভিস বজায় রাখতে অনুগ্রহ করে নিচের স্পন্সরদের অ্যাড দেখে একটু সাপোর্ট করুন। অ্যাড দেখে সাহায্য করলে আপনি পাবেন ১ দিনের প্রিমিয়াম সুবিধা!</p>
+    </div>
+
+    <div class="status-card">
+        <h3 id="premiumStatusText">Checking status...</h3>
+        <p id="progressText">Completed: 0/7 Ads</p>
+    </div>
+
+    <div class="task-container" id="taskList">
+        <p style="text-align:center; color:#777; padding:20px;">Loading tasks...</p>
+    </div>
+
+    <nav id="bottomNav">
+        <a href="index.html" class="nav-item">
+            <i class="fa-solid fa-house"></i>
+            <span>Home</span>
+        </a>
+        <a href="wishlist.html" class="nav-item">
+            <i class="fa-solid fa-heart"></i>
+            <span>Wishlist</span>
+        </a>
+        <a href="task.html" class="nav-item active">
+            <i class="fa-solid fa-list-check"></i>
+            <span>Task</span>
+        </a>
+        <a href="profile.html" class="nav-item">
+            <i class="fa-solid fa-user"></i>
+            <span>Profile</span>
+        </a>
+    </nav>
+
+    <script>
+        const firebaseConfig = { 
+            apiKey: "AIzaSyBQu8cmBIEsSBIsvSsvXH3jGYjopWnf5pM", 
+            authDomain: "hubx-viral.firebaseapp.com", 
+            projectId: "hubx-viral", 
+            storageBucket: "hubx-viral.firebasestorage.app", 
+            messagingSenderId: "694752071521", 
+            appId: "1:694752071521:web:79603b500368f90070ff20" 
+        };
+        
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        // লগইন স্ট্যাটাস ব্রাউজারে স্থায়ীভাবে ধরে রাখার জন্য পার্সিস্টেন্স সেট করা হলো
+        auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+            .catch((error) => {
+                console.error("Persistence error:", error);
+            });
+
+        let currentUserId = null;
+        let adLinks = {};
+        let userCompletedAds = [];
+        let adTimestamps = {};
+        let userUnsubscribe = null;
+
+        // ফায়ারবেস অথ স্টেট ট্র্যাক করা
+        auth.onAuthStateChanged((user) => {
+            if (user && !user.isAnonymous) {
+                currentUserId = user.uid;
+                loadAdLinks();
+                listenUserData();
+            } else {
+                currentUserId = null;
+                if(userUnsubscribe) userUnsubscribe();
+                
+                document.getElementById('premiumStatusText').innerHTML = `Login Required`;
+                document.getElementById('taskList').innerHTML = `
+                    <div style="text-align:center; padding:30px 20px;">
+                        <p style="color:#aaa; font-size:14px; margin-bottom:12px;">টাস্ক সম্পন্ন করতে দয়া করে লগইন করুন।</p>
+                        <a href="login.html" style="background:#ff0000; color:#fff; padding:10px 20px; border-radius:8px; text-decoration:none; font-weight:600; display:inline-block;">লগইন করুন</a>
+                    </div>
+                `;
+            }
+        });
+
+        function listenUserData() {
+            if (!currentUserId) return;
+            if (userUnsubscribe) userUnsubscribe();
+
+            userUnsubscribe = db.collection("users").doc(currentUserId).onSnapshot(doc => {
+                if(doc.exists) {
+                    const data = doc.data();
+                    userCompletedAds = data.completedAds || [];
+                    adTimestamps = data.adTimestamps || {};
+                    
+                    const premiumUntil = data.premiumUntil ? data.premiumUntil.toDate() : null;
+                    const now = new Date();
+
+                    if(premiumUntil && premiumUntil > now) {
+                        document.getElementById('premiumStatusText').innerHTML = `<i class="fa-solid fa-crown"></i> Premium Active`;
+                        let timeLeft = Math.ceil((premiumUntil - now) / (1000 * 60 * 60));
+                        document.getElementById('premiumStatusText').nextElementSibling.innerText = `মেয়াদ আছে আর প্রায় ${timeLeft} ঘণ্টা`;
+                    } else {
+                        document.getElementById('premiumStatusText').innerHTML = `Free User`;
+                    }
+                }
+                renderTasks();
+            });
+        }
+
+        function loadAdLinks() {
+            db.collection("settings").doc("adsterra_links").get().then(doc => {
+                if(doc.exists) {
+                    adLinks = doc.data();
+                    renderTasks();
+                } else {
+                    document.getElementById('taskList').innerHTML = `<p style="text-align:center; color:#ff3b30;">অ্যাড লিংকগুলো পাওয়া যায়নি!</p>`;
+                }
+            });
+        }
+
+        function renderTasks() {
+            if (!currentUserId) return;
+            let html = "";
+            let completedCount = userCompletedAds.length;
+            document.getElementById('progressText').innerText = `Completed: ${completedCount}/7 Ads`;
+
+            const now = new Date().getTime();
+
+            for(let i = 1; i <= 7; i++) {
+                let adKey = `ad${i}`;
+                let isDone = userCompletedAds.includes(adKey);
+                let link = adLinks[adKey] || '#';
+
+                let lastWatchedTime = adTimestamps[adKey] ? adTimestamps[adKey].toMillis() : 0;
+                let twentyFourHours = 24 * 60 * 60 * 1000;
+                let isLocked = (now - lastWatchedTime) < twentyFourHours;
+
+                let statusText = 'স্পন্সরকে সাপোর্ট করুন';
+                let btnHTML = '';
+
+                if (isDone || isLocked) {
+                    btnHTML = `<button class="task-btn completed"><i class="fa-solid fa-clock"></i> Locked</button>`;
+                    statusText = isDone ? 'সম্পন্ন হয়েছে' : '২৪ ঘণ্টার মধ্যে দেখা হয়েছে';
+                } else {
+                    btnHTML = `<button class="task-btn" id="btn_${adKey}" onclick="watchAd('${adKey}', '${link}')">Watch Ad</button>`;
+                }
+
+                html += `
+                    <div class="task-item">
+                        <div class="task-info">
+                            <h4>Task ${i}</h4>
+                            <p id="status_${adKey}">${statusText}</p>
+                        </div>
+                        <div id="action_${adKey}">
+                            ${btnHTML}
+                        </div>
+                    </div>
+                `;
+            }
+            document.getElementById('taskList').innerHTML = html;
+        }
+
+        function watchAd(adKey, link) {
+            if(link && link !== '#') {
+                window.open(link, '_blank');
+            }
+
+            let btn = document.getElementById('btn_' + adKey);
+            let status = document.getElementById('status_' + adKey);
+            let counter = 10;
+
+            if(btn) {
+                btn.disabled = true;
+                btn.style.background = "#272727";
+                btn.style.color = "#aaa";
+                btn.innerText = counter + "s";
+            }
+            status.innerText = "অ্যাড দেখা হচ্ছে...";
+
+            let timer = setInterval(() => {
+                counter--;
+                if (counter > 0) {
+                    if(btn) btn.innerText = counter + "s";
+                } else {
+                    clearInterval(timer);
+                    markAsCompleted(adKey);
+                }
+            }, 1000);
+        }
+
+        function markAsCompleted(adKey) {
+            if(!currentUserId) return;
+            if(!userCompletedAds.includes(adKey)) {
+                userCompletedAds.push(adKey);
+                
+                // ২৪ ঘণ্টার জন্য বর্তমান সময় সেভ করা হচ্ছে
+                adTimestamps[adKey] = firebase.firestore.Timestamp.now();
+
+                let updateData = { 
+                    completedAds: userCompletedAds,
+                    adTimestamps: adTimestamps
+                };
+
+                if(userCompletedAds.length >= 7) {
+                    let expiryDate = new Date();
+                    expiryDate.setHours(expiryDate.getHours() + 24);
+                    updateData.premiumUntil = expiryDate;
+                    updateData.completedAds = []; // ৭টি টাস্ক শেষ হলে আবার রিসেট হয়ে যাবে
+                    
+                    Swal.fire({
+                        title: 'অভিনন্দন!',
+                        text: 'আপনি স্পন্সরদের সাপোর্ট করে ৭টি টাস্ক সফলভাবে সম্পন্ন করেছেন এবং ১ দিনের প্রিমিয়াম লাভ করেছেন!',
+                        icon: 'success',
+                        background: '#1a1a1a',
+                        color: '#fff',
+                        confirmButtonColor: '#ff0000'
+                    });
+                }
+
+                db.collection("users").doc(currentUserId).set(updateData, { merge: true }).catch((error) => {
+                    console.error("Error updating task:", error);
+                });
+            }
+        }
+    </script>
+</body>
+</html>
