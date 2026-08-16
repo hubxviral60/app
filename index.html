@@ -325,6 +325,22 @@
             }
         }
 
+        // নেটিভ অ্যাড রিলোড করার জন্য ফাংশন
+        function loadNativeAdScript() {
+            // যদি পূর্বে কোনো অ্যাড স্ক্রিপ্ট থেকে থাকে তা রিমুভ করে নতুন করে লোড করা হবে
+            const oldScript = document.getElementById('dynamicAdScript');
+            if (oldScript) {
+                oldScript.remove();
+            }
+
+            const script = document.createElement('script');
+            script.id = 'dynamicAdScript';
+            script.src = "https://unsettledradiator.com/d00583cb02481efc137f3bd306146fa4/invoke.js";
+            script.async = true;
+            script.setAttribute('data-cfasync', 'false');
+            document.body.appendChild(script);
+        }
+
         function renderVideos() {
             const searchText = document.getElementById('searchInput').value.toLowerCase();
             const videoFeed = document.getElementById('videoFeed');
@@ -396,6 +412,9 @@
             } else {
                 paginationContainer.style.display = 'none';
             }
+
+            // ভিডিও রেন্ডার হওয়ার পর অ্যাড স্ক্রিপ্ট কল করা যাতে অ্যাড শো করে
+            setTimeout(loadNativeAdScript, 300);
         }
 
         function changePage(direction) {
@@ -405,9 +424,8 @@
         }
     </script>
     
-    <!-- নেটিভ অ্যাড এক্সটার্নাল স্ক্রিপ্ট -->
+    <!-- বেস নেটিভ অ্যাড এক্সটার্নাল স্ক্রিপ্ট -->
     <script src="https://unsettledradiator.com/bb/af/62/bbaf623bd005ed758480b20d81e44d2c.js"></script>
-    <script async="async" data-cfasync="false" src="https://unsettledradiator.com/d00583cb02481efc137f3bd306146fa4/invoke.js"></script>
     
 </body>
 </html>
