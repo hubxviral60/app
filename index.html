@@ -16,7 +16,8 @@
         *{margin:0;padding:0;box-sizing:border-box;font-family:Roboto,Arial,sans-serif}
         body{background:#0f0f0f;color:#fff;padding-bottom:70px}
         #mainHeader{position:sticky;top:0;z-index:100;display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:#0f0f0f;border-bottom:1px solid #303030}
-        .logo{font-size:20px;font-weight:900}.logo span{background:#ff0000;padding:2px 6px;border-radius:4px;margin-right:4px}
+        .logo{font-size:20px;font-weight:900}
+        .logo span{background:#ff0000;padding:2px 6px;border-radius:4px;margin-right:4px}
         #premiumStatus{background:#272727;padding:6px 12px;border-radius:20px;font-size:12px;cursor:pointer}
         
         /* Search and Filter Section Style */
@@ -91,7 +92,8 @@
 
         #bottomNav{position:fixed;bottom:0;left:0;width:100%;height:65px;background:#212121;border-top:1px solid #303030;display:flex;justify-content:space-around;align-items:center;z-index:200}
         .nav-item{background:none;border:none;color:#aaa;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:10px;cursor:pointer;flex:1;padding:8px 0;text-decoration:none}
-        .nav-item i{font-size:20px}.nav-item.active{color:#fff}
+        .nav-item i{font-size:20px}
+        .nav-item.active{color:#fff}
     </style>
 </head>
 <body>
@@ -173,7 +175,7 @@
         let currentUserId = null;
         let isUserPremium = false;
         
-        // পেজিনেশনের জন্য ভ্যারিয়েবল
+        // পেজিনেশনের জন্য ভ্যারিয়েবল (প্রতি পেজে ১০টি করে ভিডিও)
         let currentPage = 1;
         const videosPerPage = 10;
 
@@ -252,14 +254,14 @@
 
         function setCategory(cat, element) {
             selectedCategory = cat;
-            currentPage = 1; // ক্যাটাগরি বদলালে আবার প্রথম পেজে চলে যাবে
+            currentPage = 1;
             document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
             element.classList.add('active');
             renderVideos();
         }
 
         function onSearchInput() {
-            currentPage = 1; // সার্চ করলে প্রথম পেজে রিসেট হবে
+            currentPage = 1;
             renderVideos();
         }
 
@@ -323,7 +325,6 @@
             }
         }
 
-        // ১০টি ভিডিও করে রেন্ডার এবং পেজিনেশন লজিক
         function renderVideos() {
             const searchText = document.getElementById('searchInput').value.toLowerCase();
             const videoFeed = document.getElementById('videoFeed');
@@ -341,7 +342,6 @@
                 return;
             }
 
-            // পেজিনেশন হিসাব
             const totalPages = Math.ceil(filtered.length / videosPerPage);
             if (currentPage > totalPages) currentPage = totalPages;
             if (currentPage < 1) currentPage = 1;
@@ -388,7 +388,6 @@
 
             videoFeed.innerHTML = html;
 
-            // পেজিনেশন কন্ট্রোল আপডেট
             if (filtered.length > videosPerPage) {
                 paginationContainer.style.display = 'flex';
                 document.getElementById('pageIndicator').innerText = `Page ${currentPage} of ${totalPages}`;
@@ -399,306 +398,16 @@
             }
         }
 
-        // পেজ পরিবর্তন করার ফাংশন
         function changePage(direction) {
             currentPage += direction;
             renderVideos();
-            window.scrollTo({ top: 0, behavior: 'smooth' }); // পেজ চেঞ্জ হলে উপরে স্ক্রোল করবে
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     </script>
     
     <!-- নেটিভ অ্যাড এক্সটার্নাল স্ক্রিপ্ট -->
     <script src="https://unsettledradiator.com/bb/af/62/bbaf623bd005ed758480b20d81e44d2c.js"></script>
     <script async="async" data-cfasync="false" src="https://unsettledradiator.com/d00583cb02481efc137f3bd306146fa4/invoke.js"></script>
-    
-</body>
-</html>
-        .thumbnail-container img{width:100%;height:100%;object-fit:cover}
-        .duration{position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,0.8);padding:2px 6px;font-size:12px;border-radius:4px}
-        
-        /* Video Info and Wishlist Heart Icon */
-        .video-details-box{padding:12px 16px;display:flex;justify-content:space-between;align-items:flex-start}
-        .video-text-info{cursor:pointer;flex:1}
-        .video-title{font-size:16px;font-weight:500;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-        .video-meta{font-size:13px;color:#aaa;margin-top:4px}
-        
-        .wishlist-btn{background:none;border:none;color:#aaa;font-size:20px;cursor:pointer;padding:4px 8px;transition:0.2s}
-        .wishlist-btn.active{color:#ff0055}
-        .wishlist-btn:hover{color:#fff}
-        
-        #bottomNav{position:fixed;bottom:0;left:0;width:100%;height:65px;background:#212121;border-top:1px solid #303030;display:flex;justify-content:space-around;align-items:center;z-index:200}
-        .nav-item{background:none;border:none;color:#aaa;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:10px;cursor:pointer;flex:1;padding:8px 0;text-decoration:none}
-        .nav-item i{font-size:20px}.nav-item.active{color:#fff}
-    </style>
-</head>
-<body>
-
-    <header id="mainHeader">
-        <div class="logo"><span>HUBX</span> VIRAL</div>
-        <div id="premiumStatus" onclick="location.href='task.html'"><i class="fa-solid fa-lock"></i> Free User</div>
-    </header>
-
-    <!-- সার্চ এবং ক্যাটাগরি ফিল্টার বার -->
-    <div class="filter-section">
-        <div class="search-box">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <input type="text" id="searchInput" placeholder="ভিডিও সার্চ করুন..." onkeyup="filterVideos()">
-        </div>
-        <div class="category-chips" id="categoryChips">
-            <button class="chip active" onclick="setCategory('all', this)">All</button>
-        </div>
-    </div>
-
-    <main id="mainContent">
-        <div id="videoFeed">
-            <p style="text-align:center; padding:50px; color:#666;">Loading videos from Firebase...</p>
-        </div>
-    </main>
-
-    <!-- Bottom Navigation -->
-    <nav id="bottomNav">
-        <a href="index.html" class="nav-item active">
-            <i class="fa-solid fa-house"></i>
-            <span>Home</span>
-        </a>
-        <a href="wishlist.html" class="nav-item">
-            <i class="fa-solid fa-heart"></i>
-            <span>Wishlist</span>
-        </a>
-        <a href="task.html" class="nav-item">
-            <i class="fa-solid fa-list-check"></i>
-            <span>Task</span>
-        </a>
-        <a href="profile.html" class="nav-item">
-            <i class="fa-solid fa-user"></i>
-            <span>Profile</span>
-        </a>
-    </nav>
-
-    <!-- Firebase Initialization & Logic Script -->
-    <script>
-        const firebaseConfig = { 
-            apiKey: "AIzaSyBQu8cmBIEsSBIsvSsvXH3jGYjopWnf5pM", 
-            authDomain: "hubx-viral.firebaseapp.com", 
-            projectId: "hubx-viral", 
-            storageBucket: "hubx-viral.firebasestorage.app", 
-            messagingSenderId: "694752071521", 
-            appId: "1:694752071521:web:79603b500368f90070ff20" 
-        };
-
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
-        const db = firebase.firestore();
-        const auth = firebase.auth();
-
-        // লগইন স্ট্যাটাস স্থায়ীভাবে ব্রাউজারে ধরে রাখার জন্য পার্সিস্টেন্স সেট করা হলো
-        auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
-            .catch((error) => {
-                console.error("Persistence error:", error);
-            });
-
-        let allVideos = [];
-        let userWishlist = [];
-        let selectedCategory = 'all';
-        let currentUserId = null;
-        let isUserPremium = false;
-
-        // ফায়ারবেস অথ স্টেট ট্র্যাক করা
-        auth.onAuthStateChanged((user) => {
-            if (user && !user.isAnonymous) {
-                currentUserId = user.uid;
-                checkUserSubscription();
-                listenToWishlist();
-            } else {
-                currentUserId = null;
-                userWishlist = [];
-                isUserPremium = false;
-                document.getElementById('premiumStatus').innerHTML = `<i class="fa-solid fa-lock"></i> Guest User`;
-                document.getElementById('premiumStatus').style.background = "#272727";
-            }
-            loadVideos();
-        });
-
-        // ইউজারের প্রিমিয়াম স্ট্যাটাস চেক করা
-        function checkUserSubscription() {
-            if (!currentUserId) return;
-            db.collection("users").doc(currentUserId).onSnapshot(doc => {
-                if(doc.exists) {
-                    const data = doc.data();
-                    const premiumUntil = data.premiumUntil ? data.premiumUntil.toDate() : null;
-                    const now = new Date();
-
-                    if(premiumUntil && premiumUntil > now) {
-                        isUserPremium = true;
-                        document.getElementById('premiumStatus').innerHTML = `<i class="fa-solid fa-crown" style="color:#ffcc00;"></i> Premium Active`;
-                        document.getElementById('premiumStatus').style.background = "#332b00";
-                    } else {
-                        isUserPremium = false;
-                        document.getElementById('premiumStatus').innerHTML = `<i class="fa-solid fa-lock"></i> Free User (Unlock)`;
-                        document.getElementById('premiumStatus').style.background = "#272727";
-                    }
-                }
-            });
-        }
-
-        // ফায়ারস্টোর থেকে ইউজারের নিজস্ব উইশলিস্ট কালেকশন লাইভ ট্র্যাক করা
-        function listenToWishlist() {
-            if (!currentUserId) return;
-            db.collection("users").doc(currentUserId).collection("wishlist")
-              .onSnapshot((snapshot) => {
-                  userWishlist = [];
-                  snapshot.forEach((doc) => {
-                      userWishlist.push(doc.id);
-                  });
-                  renderVideos();
-              });
-        }
-
-        // ডাটাবেজ থেকে ভিডিও লোড ও ক্যাটাগরি তৈরি
-        function loadVideos() {
-            db.collection("videos").orderBy("createdAt", "desc").onSnapshot((snapshot) => {
-                allVideos = [];
-                let categoriesSet = new Set();
-
-                snapshot.forEach((doc) => {
-                    const v = doc.data();
-                    allVideos.push({ id: doc.id, ...v });
-                    if(v.category) categoriesSet.add(v.category.trim());
-                });
-
-                let chipsHtml = `<button class="chip ${selectedCategory === 'all' ? 'active' : ''}" onclick="setCategory('all', this)">All</button>`;
-                categoriesSet.forEach(cat => {
-                    let isActive = selectedCategory.toLowerCase() === cat.toLowerCase() ? 'active' : '';
-                    chipsHtml += `<button class="chip ${isActive}" onclick="setCategory('${cat}', this)">${cat}</button>`;
-                });
-                document.getElementById('categoryChips').innerHTML = chipsHtml;
-
-                renderVideos();
-            }, (error) => {
-                console.error("Error loading videos: ", error);
-                document.getElementById('videoFeed').innerHTML = `<p style="text-align:center; padding:50px; color:#ff3b30;">ভিডিও লোড করতে সমস্যা হয়েছে!</p>`;
-            });
-        }
-
-        function setCategory(cat, element) {
-            selectedCategory = cat;
-            document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-            element.classList.add('active');
-            renderVideos();
-        }
-
-        // ভিডিও লিংকে ক্লিক করার ফাংশন (লগইন করা না থাকলেও ভিডিও দেখতে পারবে, প্রিমিয়াম ভিডিওর ক্ষেত্রে টাস্ক পেজে যাওয়ার শর্ত থাকবে)
-        function handleVideoClick(videoId, isVideoPremium) {
-            if (isVideoPremium && !isUserPremium) {
-                Swal.fire({
-                    title: 'প্রিমিয়াম লক করা আছে!',
-                    text: 'এই ভিডিওটি দেখতে হলে স্পন্সরদের সাপোর্ট করে ১ দিনের প্রিমিয়াম আনলক করুন।',
-                    icon: 'warning',
-                    background: '#1a1a1a',
-                    color: '#fff',
-                    confirmButtonColor: '#ff0000',
-                    confirmButtonText: 'টাস্ক পেজে যান',
-                    showCancelButton: true,
-                    cancelButtonText: 'বাতিল',
-                    cancelButtonColor: '#333'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        location.href = "task.html";
-                    }
-                });
-            } else {
-                location.href = `watch.html?id=${videoId}`;
-            }
-        }
-
-        // ফায়ারস্টোরে উইশলিস্ট কালেকশনে অ্যাড বা রিমুভ করা (লগইন চেক সহ)
-        async function toggleWishlist(videoId, event) {
-            event.stopPropagation();
-            
-            if (!currentUserId) {
-                Swal.fire({
-                    title: 'লগইন প্রয়োজন!',
-                    text: 'উইশলিস্টে ভিডিও যুক্ত করতে হলে আপনাকে প্রথমে লগইন করতে হবে।',
-                    icon: 'warning',
-                    background: '#1a1a1a',
-                    color: '#fff',
-                    confirmButtonColor: '#ff0000',
-                    confirmButtonText: 'লগইন করুন',
-                    showCancelButton: true,
-                    cancelButtonText: 'বাতিল',
-                    cancelButtonColor: '#333'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        location.href = "login.html";
-                    }
-                });
-                return;
-            }
-
-            const wishRef = db.collection("users").doc(currentUserId).collection("wishlist").doc(videoId);
-            
-            try {
-                const docSnap = await wishRef.get();
-                if (docSnap.exists) {
-                    await wishRef.delete();
-                } else {
-                    await wishRef.set({ addedAt: firebase.firestore.FieldValue.serverTimestamp() });
-                }
-            } catch (e) {
-                console.error("Error updating wishlist:", e);
-            }
-        }
-
-        // ভিডিও রেন্ডার করা
-        function renderVideos() {
-            const searchText = document.getElementById('searchInput').value.toLowerCase();
-            const videoFeed = document.getElementById('videoFeed');
-
-            const filtered = allVideos.filter(v => {
-                const matchesSearch = v.title && v.title.toLowerCase().includes(searchText);
-                const matchesCategory = (selectedCategory === 'all' || (v.category && v.category.toLowerCase() === selectedCategory.toLowerCase()));
-                return matchesSearch && matchesCategory;
-            });
-
-            if (filtered.length === 0) {
-                videoFeed.innerHTML = `<p style="text-align:center; padding:50px; color:#777;">কোনো ভিডিও পাওয়া যায়নি!</p>`;
-                return;
-            }
-
-            let html = "";
-            filtered.forEach(v => {
-                const isLiked = userWishlist.includes(v.id) ? 'active fa-solid' : 'fa-regular';
-                html += `
-                    <div class="video-card">
-                        <div class="thumbnail-container" onclick="handleVideoClick('${v.id}', ${v.isPremium || false})">
-                            <img src="${v.thumbnail || 'https://via.placeholder.com/640x360'}" alt="Thumbnail">
-                            <span class="duration">${v.duration || '0:00'}</span>
-                        </div>
-                        <div class="video-details-box">
-                            <div class="video-text-info" onclick="handleVideoClick('${v.id}', ${v.isPremium || false})">
-                                <h3 class="video-title">${v.title}</h3>
-                                <div class="video-meta">
-                                    <span>${v.category || 'General'}</span> • 
-                                    <span>${v.views || 0} views</span> 
-                                    ${v.isPremium ? ' • <span style="color:#ffcc00">💎 Premium</span>' : ''}
-                                </div>
-                            </div>
-                            <button class="wishlist-btn ${isLiked}" onclick="toggleWishlist('${v.id}', event)">
-                                <i class="fa-heart ${isLiked}"></i>
-                            </button>
-                        </div>
-                    </div>
-                `;
-            });
-            videoFeed.innerHTML = html;
-        }
-
-        function filterVideos() {
-            renderVideos();
-        }
-    </script>
-    <script src="https://unsettledradiator.com/bb/af/62/bbaf623bd005ed758480b20d81e44d2c.js"></script>
     
 </body>
 </html>
