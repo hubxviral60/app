@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login & Signup - HubX Viral</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- SweetAlert2 CSS & JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Firebase App, Auth & Firestore Compat Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:Roboto,Arial,sans-serif}
+        body{background:#0f0f0f;color:#fff;display:flex;justify-content:center;align-items:center;min-height:100vh;padding:20px}
+        
+        .auth-container{width:100%;max-width:400px;background:#181818;border:1px solid #282828;border-radius:12px;padding:24px;box-shadow:0 4px 20px rgba(0,0,0,0.5)}
+        .logo-area{text-align:center;margin-bottom:20px}
+        .logo{font-size:24px;font-weight:900}.logo span{background:#ff0000;padding:2px 6px;border-radius:4px;margin-right:4px}
+        
+        /* Tab Switcher Buttons */
+        .auth-tabs{display:flex;background:#222;border-radius:8px;padding:4px;margin-bottom:20px}
+        .tab-btn{flex:1;background:none;border:none;color:#aaa;padding:10px;font-size:14px;font-weight:600;cursor:pointer;border-radius:6px;transition:0.2s}
+        .tab-btn.active{background:#ff0000;color:#fff}
+
+        .form-group{margin-bottom:16px}
+        .form-label{display:block;font-size:13px;color:#aaa;margin-bottom:6px}
+        .input-box{display:flex;align-items:center;background:#222;border:1px solid #333;border-radius:8px;padding:10px 14px}
+        .input-box i{color:#777;margin-right:10px}
+        .input-box input{width:100%;background:none;border:none;color:#fff;outline:none;font-size:14px}
+
+        .action-btn{width:100%;padding:12px;background:#ff0000;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;transition:0.2s;margin-top:10px}
+        .action-btn:hover{background:#cc0000}
+
+        .form-footer{text-align:center;margin-top:16px;font-size:13px;color:#aaa}
+        .form-footer a{color:#ff0000;text-decoration:none;cursor:pointer}
+        .form-footer a:hover{text-decoration:underline}
+
+        .form-section{display:none}
+        .form-section.active{display:block}
+    </style>
+</head>
+<body>
+
+    <div class="auth-container">
+        <div class="logo-area">
+            <div class="logo"><span>HUBX</span> VIRAL</div>
+        </div>
+
+        <!-- টাব সুইচ বার -->
+        <div class="auth-tabs" id="authTabsBar">
+            <button class="tab-btn active" onclick="switchTab('login')">লগইন</button>
+            <button class="tab-btn" onclick="switchTab('signup')">সাইন আপ</button>
+        </div>
+
+        <!-- ১. লগইন ফর্ম -->
+        <div id="loginFormSection" class="form-section active">
+            <form onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label class="form-label">ইমেইল</label>
+                    <div class="input-box">
+                        <i class="fa-solid fa-envelope"></i>
+                        <input type="email" id="loginEmail" required placeholder="example@email.com">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">পাসওয়ার্ড</label>
+                    <div class="input-box">
+                        <i class="fa-solid fa-lock"></i>
+                        <input type="password" id="loginPassword" required placeholder="••••••••">
+                    </div>
+                </div>
+                <div style="text-align:right; margin-bottom:10px;">
+                    <a href="#" onclick="switchTab('forgot')" style="font-size:12px; color:#aaa;">পাসওয়ার্ড ভুলে গেছেন?</a>
+                </div>
+                <button type="submit" class="action-btn">লগইন করুন</button>
+            </form>
+            <div class="form-footer">
+                একাউন্ট নেই? <a onclick="switchTab('signup')">সাইন আপ করুন</a>
+            </div>
+        </div>
+
+        <!-- ২. সাইন আপ ফর্ম -->
+        <div id="signupFormSection" class="form-section">
+            <form onsubmit="handleSignup(event)">
+                <div class="form-group">
+                    <label class="form-label">নাম</label>
+                    <div class="input-box">
+                        <i class="fa-solid fa-user"></i>
+                        <input type="text" id="signupName" required placeholder="আপনার নাম">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">ইমেইল</label>
+                    <div class="input-box">
+                        <i class="fa-solid fa-envelope"></i>
+                        <input type="email" id="signupEmail" required placeholder="example@email.com">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">পাসওয়ার্ড (কমপক্ষে ৬ ডিজিট)</label>
+                    <div class="input-box">
+                        <i class="fa-solid fa-lock"></i>
+                        <input type="password" id="signupPassword" required placeholder="••••••••">
+                    </div>
+                </div>
+                <button type="submit" class="action-btn">একাউন্ট তৈরি করুন</button>
+            </form>
+            <div class="form-footer">
+                ইতিমধ্যেই একাউন্ট আছে? <a onclick="switchTab('login')">লগইন করুন</a>
+            </div>
+        </div>
+
+        <!-- ৩. ফরেগেট পাসওয়ার্ড ফর্ম -->
+        <div id="forgotFormSection" class="form-section">
+            <p style="font-size:13px; color:#aaa; margin-bottom:15px; text-align:center;">আপনার রেজিস্টার্ড ইমেইলটি লিখুন, পাসওয়ার্ড রিসেট লিংক পাঠানো হবে।</p>
+            <form onsubmit="handleForgotPassword(event)">
+                <div class="form-group">
+                    <label class="form-label">ইমেইল</label>
+                    <div class="input-box">
+                        <i class="fa-solid fa-envelope"></i>
+                        <input type="email" id="forgotEmail" required placeholder="example@email.com">
+                    </div>
+                </div>
+                <button type="submit" class="action-btn">রিসেট লিংক পাঠান</button>
+            </form>
+            <div class="form-footer" style="margin-top:15px;">
+                <a onclick="switchTab('login')"><i class="fa-solid fa-arrow-left"></i> লগইন পেজে ফিরে যান</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase স্ক্রিপ্ট ও লজিক -->
+    <script>
+        const firebaseConfig = { 
+            apiKey: "AIzaSyBQu8cmBIEsSBIsvSsvXH3jGYjopWnf5pM", 
+            authDomain: "hubx-viral.firebaseapp.com", 
+            projectId: "hubx-viral", 
+            storageBucket: "hubx-viral.firebasestorage.app", 
+            messagingSenderId: "694752071521", 
+            appId: "1:694752071521:web:79603b500368f90070ff20" 
+        };
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        // লগইন স্ট্যাটাস স্থায়ীভাবে ব্রাউজারে সেভ রাখার জন্য পার্সিস্টেন্স সেট করা হলো
+        auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+            .catch((error) => {
+                console.error("Persistence error:", error);
+            });
+
+        // ট্যাব পরিবর্তন করার ফাংশন
+        function switchTab(tabName) {
+            document.querySelectorAll('.form-section').forEach(sec => sec.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+
+            if (tabName === 'login') {
+                document.getElementById('loginFormSection').classList.add('active');
+                if(document.querySelectorAll('.tab-btn')[0]) document.querySelectorAll('.tab-btn')[0].classList.add('active');
+                document.getElementById('authTabsBar').style.display = 'flex';
+            } else if (tabName === 'signup') {
+                document.getElementById('signupFormSection').classList.add('active');
+                if(document.querySelectorAll('.tab-btn')[1]) document.querySelectorAll('.tab-btn')[1].classList.add('active');
+                document.getElementById('authTabsBar').style.display = 'flex';
+            } else if (tabName === 'forgot') {
+                document.getElementById('forgotFormSection').classList.add('active');
+                document.getElementById('authTabsBar').style.display = 'none'; // ফরেগেটে ট্যাব বার হাইড থাকবে
+            }
+        }
+
+        // সাইন আপ লজিক
+        function handleSignup(e) {
+            e.preventDefault();
+            const name = document.getElementById('signupName').value;
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+
+            auth.createUserWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    const user = userCredential.user;
+                    // ইউজারের নাম আপডেট করা
+                    user.updateProfile({ displayName: name });
+
+                    // ফায়ারস্টোরে ইউজারের ডাটা ইনিশিয়ালাইজ করা
+                    db.collection("users").doc(user.uid).set({
+                        name: name,
+                        email: email,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    }).then(() => {
+                        Swal.fire({
+                            title: 'সফল হয়েছে!',
+                            text: 'একাউন্ট সফলভাবে তৈরি হয়েছে।',
+                            icon: 'success',
+                            background: '#1a1a1a',
+                            color: '#fff',
+                            confirmButtonColor: '#ff0000'
+                        }).then(() => {
+                            location.href = 'profile.html';
+                        });
+                    });
+                })
+                .catch((error) => {
+                    Swal.fire({
+                        title: 'ত্রুটি!',
+                        text: error.message,
+                        icon: 'error',
+                        background: '#1a1a1a',
+                        color: '#fff',
+                        confirmButtonColor: '#ff0000'
+                    });
+                });
+        }
+
+        // লগইন লজিক
+        function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            auth.signInWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    Swal.fire({
+                        title: 'স্বাগতম!',
+                        text: 'সফলভাবে লগইন করা হয়েছে।',
+                        icon: 'success',
+                        background: '#1a1a1a',
+                        color: '#fff',
+                        confirmButtonColor: '#ff0000',
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => {
+                        location.href = 'profile.html';
+                    });
+                })
+                .catch((error) => {
+                    Swal.fire({
+                        title: 'লগইন ব্যর্থ!',
+                        text: 'ইমেইল অথবা পাসওয়ার্ড সঠিক নয়।',
+                        icon: 'error',
+                        background: '#1a1a1a',
+                        color: '#fff',
+                        confirmButtonColor: '#ff0000'
+                    });
+                });
+        }
+
+        // পাসওয়ার্ড রিকভারি / ফরেগেট পাসওয়ার্ড লজিক
+        function handleForgotPassword(e) {
+            e.preventDefault();
+            const email = document.getElementById('forgotEmail').value;
+
+            auth.sendPasswordResetEmail(email)
+                .then(() => {
+                    Swal.fire({
+                        title: 'ইমেইল পাঠানো হয়েছে!',
+                        text: 'পাসওয়ার্ড রিসেট করার লিংক আপনার ইমেইলে পাঠানো হয়েছে। ইনবক্স বা স্প্যাম ফোল্ডার চেক করুন।',
+                        icon: 'success',
+                        background: '#1a1a1a',
+                        color: '#fff',
+                        confirmButtonColor: '#ff0000'
+                    }).then(() => {
+                        switchTab('login');
+                    });
+                })
+                .catch((error) => {
+                    Swal.fire({
+                        title: 'ত্রুটি!',
+                        text: error.message,
+                        icon: 'error',
+                        background: '#1a1a1a',
+                        color: '#fff',
+                        confirmButtonColor: '#ff0000'
+                    });
+                });
+        }
+    </script>
+</body>
+</html>
