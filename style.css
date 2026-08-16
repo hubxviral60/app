@@ -1,0 +1,173 @@
+/* css/style.css - HubX Viral App Style */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Roboto', Arial, sans-serif;
+}
+
+body {
+    background: #0f0f0f;
+    color: #fff;
+    padding-bottom: 70px; /* Bottom Nav এর জন্য জায়গা */
+}
+
+/* Top Header */
+#mainHeader {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: #0f0f0f;
+    border-bottom: 1px solid #303030;
+}
+
+.logo {
+    font-size: 20px;
+    font-weight: 900;
+    letter-spacing: 1px;
+}
+.logo span {
+    background: #ff0000;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-right: 4px;
+}
+
+#premiumStatus {
+    background: #272727;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+}
+
+/* Tab Content */
+.tab-content {
+    display: none;
+}
+.tab-content.active {
+    display: block;
+}
+
+/* YouTube Style Video Feed */
+#videoFeed {
+    display: flex;
+    flex-direction: column;
+}
+
+.video-card {
+    background: #0f0f0f;
+    margin-bottom: 12px;
+    cursor: pointer;
+}
+
+.video-card .thumbnail {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16/9;
+    background: #1a1a1a;
+    overflow: hidden;
+}
+
+.video-card .thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.video-card .duration {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    background: rgba(0,0,0,0.8);
+    padding: 2px 6px;
+    font-size: 12px;
+    border-radius: 4px;
+}
+
+.video-info {
+    padding: 12px 16px;
+}
+
+.video-title {
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.video-meta {
+    font-size: 13px;
+    color: #aaa;
+    margin-top: 4px;
+}
+
+/* Task Tab Style */
+#lockScreen {
+    padding: 20px;
+    max-width: 400px;
+    margin: 20px auto;
+    background: #1a1a1a;
+    border-radius: 16px;
+    border: 1px solid #303030;
+}
+
+#lockScreen h2 {
+    text-align: center;
+    font-size: 20px;
+}
+
+#lockScreen p {
+    text-align: center;
+    font-size: 13px;
+    color: #aaa;
+    margin-top: 8px;
+}
+
+/* Bottom Navigation Bar - App Style */
+#bottomNav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 65px;
+    background: #212121;
+    border-top: 1px solid #303030;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    z-index: 200;
+}
+
+.nav-item {
+    background: none;
+    border: none;
+    color: #aaa;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    cursor: pointer;
+    flex: 1;
+    padding: 8px 0;
+}
+
+.nav-item i {
+    font-size: 20px;
+}
+
+.nav-item.active {
+    color: #fff;
+}
+
+.nav-item.active i {
+    color: #fff;
+}
