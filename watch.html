@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Watch Video - HubX Viral</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- SweetAlert2 CSS & JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Firebase App, Auth & Firestore Compat Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:Roboto,Arial,sans-serif}
+        body{background:#0f0f0f;color:#fff;padding-bottom:70px}
+        
+        .player-container{width:100%;aspect-ratio:16/9;background:#000;display:flex;align-items:center;justify-content:center}
+        .player-container video{width:100%;height:100%;object-fit:contain}
+        
+        .video-info{padding:16px}
+        .video-title{font-size:18px;font-weight:600;margin-bottom:8px}
+        .video-meta{font-size:14px;color:#aaa;display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+        
+        .action-bar{display:flex;gap:15px;margin-bottom:16px;overflow-x:auto;padding-bottom:4px}
+        .action-btn{background:#272727;border:none;color:#fff;padding:8px 16px;border-radius:20px;cursor:pointer;font-size:14px;display:flex;align-items:center;gap:6px;white-space:nowrap}
+        .action-btn:hover{background:#3f3f3f}
+        
+        .related-title{padding:16px;font-size:16px;font-weight:600;border-top:1px solid #222}
+        .related-item{display:flex;gap:12px;padding:10px 16px;cursor:pointer;align-items:center}
+        .related-item:hover{background:#1a1a1a}
+        .related-thumb{width:120px;aspect-ratio:16/9;background:#222;border-radius:6px;object-fit:cover}
+        .related-info h4{font-size:14px;font-weight:500;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+        
+        #bottomNav{position:fixed;bottom:0;left:0;width:100%;height:65px;background:#212121;border-top:1px solid #303030;display:flex;justify-content:space-around;align-items:center;z-index:200}
+        .nav-item{background:none;border:none;color:#aaa;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:10px;cursor:pointer;flex:1;padding:8px 0;text-decoration:none}
+        .nav-item i{font-size:20px}
+        .nav-item.active{color:#fff}
+    </style>
+</head>
+<body>
+
+    <div class="player-container" id="player">
+        <p style="color:#aaa;">Loading video...</p>
+    </div>
+
+    <div class="video-info">
+        <h1 class="video-title" id="title">Loading...</h1>
+        <div class="video-meta">
+            <span id="views">0 views</span>
+        </div>
+        <div class="action-bar">
+            <button class="action-btn" onclick="interact('likes')">
+                <i class="fa-solid fa-thumbs-up"></i> <span id="likeCount">0</span>
+            </button>
+            <button class="action-btn" onclick="interact('dislikes')">
+                <i class="fa-solid fa-thumbs-down"></i> <span id="dislikeCount">0</span>
+            </button>
+            <button class="action-btn" onclick="shareVideo()">
+                <i class="fa-solid fa-share"></i> Share
+            </button>
+        </div>
+    </div>
+
+    <div class="related-title">Related Videos</div>
+    <div id="relatedFeed"></div>
+
+    <nav id="bottomNav">
+        <a href="index.html" class="nav-item">
+            <i class="fa-solid fa-house"></i>
+            <span>Home</span>
+        </a>
+        <a href="wishlist.html" class="nav-item">
+            <i class="fa-solid fa-heart"></i>
+            <span>Wishlist</span>
+        </a>
+        <a href="task.html" class="nav-item">
+            <i class="fa-solid fa-list-check"></i>
+            <span>Task</span>
+        </a>
+        <a href="profile.html" class="nav-item">
+            <i class="fa-solid fa-user"></i>
+            <span>Profile</span>
+        </a>
+    </nav>
+
+    <script>
+        const firebaseConfig = { 
+            apiKey: "AIzaSyBQu8cmBIEsSBIsvSsvXH3jGYjopWnf5pM", 
+            authDomain: "hubx-viral.firebaseapp.com", 
+            projectId: "hubx-viral", 
+            storageBucket: "hubx-viral.firebasestorage.app", 
+            messagingSenderId: "694752071521", 
+            appId: "1:694752071521:web:79603b500368f90070ff20" 
+        };
+        
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        // লগইন স্ট্যাটাস ব্রাউজারে স্থায়ীভাবে ধরে রাখার জন্য পার্সিস্টেন্স সেট করা হলো
+        auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+            .catch((error) => {
+                console.error("Persistence error:", error);
+            });
+
+        let currentUserId = null;
+
+        // ফায়ারবেস অথ স্টেট ট্র্যাক করা
+        auth.onAuthStateChanged((user) => {
+            if (user && !user.isAnonymous) {
+                currentUserId = user.uid;
+            } else {
+                currentUserId = null;
+            }
+        });
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const videoId = urlParams.get('id');
+
+        if (videoId) {
+            // Fetch Current Video Data (লগইন করা না থাকলেও ভিডিও দেখতে পারবে)
+            db.collection("videos").doc(videoId).get().then(doc => {
+                if(doc.exists) {
+                    const v = doc.data();
+                    document.getElementById('title').innerText = v.title || "Untitled";
+                    document.getElementById('views').innerText = (v.views || 0) + " views";
+                    document.getElementById('likeCount').innerText = v.likes || 0;
+                    document.getElementById('dislikeCount').innerText = v.dislikes || 0;
+                    
+                    // Check for 'videoUrl' from Firestore
+                    const videoSrc = v.videoUrl || v.url;
+                    if(videoSrc) {
+                        document.getElementById('player').innerHTML = `<video src="${videoSrc}" controls autoplay></video>`;
+                    } else {
+                        document.getElementById('player').innerHTML = `<p style="color:#ff3b30;">ভিডিওর লিংক পাওয়া যায়নি!</p>`;
+                    }
+
+                    // Increment View Count
+                    db.collection("videos").doc(videoId).update({
+                        views: firebase.firestore.FieldValue.increment(1)
+                    });
+                } else {
+                    document.getElementById('player').innerHTML = `<p style="color:#ff3b30;">ভিডিওটি খুঁজে পাওয়া যায়নি!</p>`;
+                }
+            }).catch(err => {
+                console.error(err);
+            });
+        }
+
+        // Load Related Videos
+        db.collection("videos").limit(6).get().then(snapshot => {
+            let html = "";
+            snapshot.forEach(doc => {
+                if(doc.id !== videoId) {
+                    const v = doc.data();
+                    html += `
+                        <div class="related-item" onclick="location.href='watch.html?id=${doc.id}'">
+                            <img class="related-thumb" src="${v.thumbnail || 'https://via.placeholder.com/120x68'}" alt="Thumbnail">
+                            <div class="related-info">
+                                <h4>${v.title || 'Untitled'}</h4>
+                                <span style="font-size:12px; color:#aaa;">${v.views || 0} views</span>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+            document.getElementById('relatedFeed').innerHTML = html;
+        });
+
+        // Like / Dislike Interaction (লগইন চেক সহ)
+        function interact(type) {
+            if(!videoId) return;
+
+            if(!currentUserId) {
+                Swal.fire({
+                    title: 'লগইন প্রয়োজন!',
+                    text: 'লাইক বা ডিসলাইক দিতে হলে আপনাকে প্রথমে লগইন করতে হবে।',
+                    icon: 'warning',
+                    background: '#1a1a1a',
+                    color: '#fff',
+                    confirmButtonColor: '#ff0000',
+                    confirmButtonText: 'লগইন করুন',
+                    showCancelButton: true,
+                    cancelButtonText: 'বাতিল',
+                    cancelButtonColor: '#333'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        location.href = "login.html";
+                    }
+                });
+                return;
+            }
+
+            db.collection("videos").doc(videoId).update({
+                [type]: firebase.firestore.FieldValue.increment(1)
+            }).then(() => {
+                location.reload();
+            });
+        }
+
+        // Share Functionality
+        function shareVideo() {
+            if (navigator.share) {
+                navigator.share({
+                    title: document.getElementById('title').innerText,
+                    url: window.location.href
+                }).catch(console.error);
+            } else {
+                navigator.clipboard.writeText(window.location.href);
+                alert("লিংক কপি করা হয়েছে!");
+            }
+        }
+    </script>
+</body>
+</html>
