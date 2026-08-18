@@ -40,22 +40,16 @@
             position: absolute;
             top: 15px;
             right: 15px;
-            background: rgba(50, 50, 50, 0.8);
+            background: #ff0000;
             color: #fff;
-            border: 1px solid #777;
+            border: 1px solid #ff0000;
             padding: 6px 14px;
             border-radius: 4px;
             cursor: pointer;
             font-size: 13px;
             font-weight: 500;
-            display: none;
+            display: block;
             z-index: 101;
-        }
-
-        .skip-btn.active {
-            background: #ff0000;
-            border-color: #ff0000;
-            cursor: pointer;
         }
 
         .video-info{padding:16px}
@@ -94,21 +88,12 @@
 
     <div class="player-container" id="playerContainer">
         <!-- স্কিপ বাটন -->
-        <button id="skipBtn" class="skip-btn" onclick="skipOverlayAd()">অপেক্ষা করুন (<span id="countdown">10</span>s)</button>
+        <button id="skipBtn" class="skip-btn" onclick="skipOverlayAd()">Skip Ad <i class="fa-solid fa-forward"></i></button>
         
         <!-- ভিডিও ওভারলে ব্যানার অ্যাড -->
         <div id="videoOverlayAd">
             <p style="color:#aaa; margin-bottom: 8px; font-size: 12px;">বিজ্ঞাপন</p>
-            <script>
-              atOptions = {
-                'key' : '4e1a56763ab45e4295c4a7c54f18f24c',
-                'format' : 'iframe',
-                'height' : 250,
-                'width' : 300,
-                'params' : {}
-              };
-            </script>
-            <script src="https://unsettledradiator.com/4e1a56763ab45e4295c4a7c54f18f24c/invoke.js"></script>
+            <script async src="https://js.onclckmn.com/static/onclicka.js" data-admpid="455390"></script>
         </div>
 
         <div id="player" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center;">
@@ -189,32 +174,9 @@
         const urlParams = new URLSearchParams(window.location.search);
         const videoId = urlParams.get('id');
 
-        // ১০ সেকেন্ডের কাউন্টডাউন টাইমার ফাংশন
-        function startAdTimer() {
-            let timeLeft = 10;
-            const countdownElem = document.getElementById('countdown');
-            const skipBtn = document.getElementById('skipBtn');
-            
-            skipBtn.style.display = 'block';
-
-            let timer = setInterval(() => {
-                timeLeft--;
-                if (countdownElem) countdownElem.innerText = timeLeft;
-
-                if (timeLeft <= 0) {
-                    clearInterval(timer);
-                    skipBtn.innerHTML = 'Skip Ad <i class="fa-solid fa-forward"></i>';
-                    skipBtn.classList.add('active');
-                }
-            }, 1000);
-        }
-
         function skipOverlayAd() {
-            const skipBtn = document.getElementById('skipBtn');
-            if (!skipBtn.classList.contains('active')) return;
-
             document.getElementById('videoOverlayAd').style.display = 'none';
-            skipBtn.style.display = 'none';
+            document.getElementById('skipBtn').style.display = 'none';
 
             if (videoDetails) {
                 renderVideoData(videoDetails);
@@ -291,9 +253,6 @@
                         handleUnauthorizedAccess("এই ভিডিওটি দেখতে হলে আপনাকে অবশ্যই টাস্ক কমপ্লিট করে প্রিমিয়াম টাইম একটিভ করতে হবে।");
                         return;
                     }
-
-                    // প্রিমিয়াম ইউজার হলে ওভারলে অ্যাড টাইমার চালু হবে
-                    startAdTimer();
 
                     // Increment View Count
                     db.collection("videos").doc(videoId).update({
