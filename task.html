@@ -16,13 +16,26 @@
         *{margin:0;padding:0;box-sizing:border-box;font-family:Roboto,Arial,sans-serif}
         body{background:#0f0f0f;color:#fff;padding-bottom:80px}
         
-        .header{padding:16px;text-align:center;background:#181818;border-bottom:1px solid #333}
-        .header h2{font-size:18px;margin-bottom:6px;color:#ffcc00}
-        .header p{font-size:13px;color:#aaa;line-height:1.4}
+        .header{padding:18px;text-align:center;background:#181818;border-bottom:1px solid #333}
+        .header h2{font-size:18px;margin-bottom:8px;color:#ffcc00}
+        .header p{font-size:13px;color:#ccc;line-height:1.5}
         
         .status-card{margin:16px;background:#212121;padding:16px;border-radius:12px;text-align:center;border:1px solid #333}
         .status-card h3{font-size:16px;color:#ffcc00;margin-bottom:6px}
+        .status-card p{font-size:13px;color:#aaa;margin-top:4px}
         
+        .notice-box {
+            margin: 0 16px 16px 16px;
+            background: rgba(255, 204, 0, 0.1);
+            border: 1px dashed #ffcc00;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #ffd700;
+            text-align: center;
+            line-height: 1.4;
+        }
+
         .task-container{padding:0 16px}
         .task-item{display:flex;justify-content:space-between;align-items:center;background:#1a1a1a;margin-bottom:12px;padding:14px;border-radius:8px;border:1px solid #2a2a2a}
         .task-info h4{font-size:15px;margin-bottom:2px}
@@ -40,17 +53,21 @@
 <body>
 
     <div class="header">
-        <h2><i class="fa-solid fa-heart"></i> স্পন্সরদের সাপোর্ট করুন</h2>
-        <p>আমাদের সাইটটি সচল রাখতে এবং আপনাদের জন্য ফ্রি ভিডিও ও সার্ভিস বজায় রাখতে অনুগ্রহ করে নিচের স্পন্সরদের অ্যাড দেখে একটু সাপোর্ট করুন। অ্যাড দেখে সাহায্য করলে আপনি পাবেন ১ দিনের প্রিমিয়াম সুবিধা!</p>
+        <h2><i class="fa-solid fa-crown" style="color: #ffcc00;"></i> প্রিমিয়াম আনলক করুন</h2>
+        <p>আমাদের সাইটের এক্সক্লুসিভ ভিডিওগুলো দেখতে হলে নিচের ৭টি টাস্ক সম্পন্ন করে প্রিমিয়াম সুবিধা একটিভ করুন।</p>
+    </div>
+
+    <div class="notice-box">
+        <i class="fa-solid fa-circle-info"></i> নিয়ম: প্রতিটিতে অন্তত <b>১০ সেকেন্ড করে অ্যাড দেখতে হবে</b>। মোট <b>৭টি অ্যাড</b> সম্পূর্ণ দেখলে আপনি পাবেন <b>১ দিনের (২৪ ঘণ্টা) প্রিমিয়াম এক্সেস</b>!
     </div>
 
     <div class="status-card">
-        <h3 id="premiumStatusText">Checking status...</h3>
+        <h3 id="premiumStatusText">স্ট্যাটাস চেক করা হচ্ছে...</h3>
         <p id="progressText">Completed: 0/7 Ads</p>
     </div>
 
     <div class="task-container" id="taskList">
-        <p style="text-align:center; color:#777; padding:20px;">Loading tasks...</p>
+        <p style="text-align:center; color:#777; padding:20px;">টাস্ক লোড হচ্ছে...</p>
     </div>
 
     <nav id="bottomNav">
@@ -88,7 +105,6 @@
         const db = firebase.firestore();
         const auth = firebase.auth();
 
-        // লগইন স্ট্যাটাস ব্রাউজারে স্থায়ীভাবে ধরে রাখার জন্য পার্সিস্টেন্স সেট করা হলো
         auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
             .catch((error) => {
                 console.error("Persistence error:", error);
@@ -100,7 +116,6 @@
         let adTimestamps = {};
         let userUnsubscribe = null;
 
-        // ফায়ারবেস অথ স্টেট ট্র্যাক করা
         auth.onAuthStateChanged((user) => {
             if (user && !user.isAnonymous) {
                 currentUserId = user.uid;
@@ -110,10 +125,10 @@
                 currentUserId = null;
                 if(userUnsubscribe) userUnsubscribe();
                 
-                document.getElementById('premiumStatusText').innerHTML = `Login Required`;
+                document.getElementById('premiumStatusText').innerHTML = `লগইন প্রয়োজন`;
                 document.getElementById('taskList').innerHTML = `
                     <div style="text-align:center; padding:30px 20px;">
-                        <p style="color:#aaa; font-size:14px; margin-bottom:12px;">টাস্ক সম্পন্ন করতে দয়া করে লগইন করুন।</p>
+                        <p style="color:#aaa; font-size:14px; margin-bottom:12px;">টাস্ক সম্পন্ন করতে এবং প্রিমিয়াম পেতে দয়া করে লগইন করুন।</p>
                         <a href="login.html" style="background:#ff0000; color:#fff; padding:10px 20px; border-radius:8px; text-decoration:none; font-weight:600; display:inline-block;">লগইন করুন</a>
                     </div>
                 `;
@@ -134,11 +149,11 @@
                     const now = new Date();
 
                     if(premiumUntil && premiumUntil > now) {
-                        document.getElementById('premiumStatusText').innerHTML = `<i class="fa-solid fa-crown"></i> Premium Active`;
+                        document.getElementById('premiumStatusText').innerHTML = `<i class="fa-solid fa-crown" style="color: #ffcc00;"></i> প্রিমিয়াম একটিভ আছে`;
                         let timeLeft = Math.ceil((premiumUntil - now) / (1000 * 60 * 60));
-                        document.getElementById('premiumStatusText').nextElementSibling.innerText = `মেয়াদ আছে আর প্রায় ${timeLeft} ঘণ্টা`;
+                        document.getElementById('premiumStatusText').nextElementSibling.innerText = `আপনার প্রিমিয়াম মেয়াদ আরও প্রায় ${timeLeft} ঘণ্টা বাকি আছে। এখন সব ভিডিও দেখতে পারবেন!`;
                     } else {
-                        document.getElementById('premiumStatusText').innerHTML = `Free User`;
+                        document.getElementById('premiumStatusText').innerHTML = `ফ্রি ইউজার (প্রিমিয়াম নিষ্ক্রিয়)`;
                     }
                 }
                 renderTasks();
@@ -160,7 +175,7 @@
             if (!currentUserId) return;
             let html = "";
             let completedCount = userCompletedAds.length;
-            document.getElementById('progressText').innerText = `Completed: ${completedCount}/7 Ads`;
+            document.getElementById('progressText').innerText = `সম্পন্ন হয়েছে: ${completedCount}/৭ টি অ্যাড`;
 
             const now = new Date().getTime();
 
@@ -173,11 +188,11 @@
                 let twentyFourHours = 24 * 60 * 60 * 1000;
                 let isLocked = (now - lastWatchedTime) < twentyFourHours;
 
-                let statusText = 'স্পন্সরকে সাপোর্ট করুন';
+                let statusText = '১০ সেকেন্ড অ্যাড দেখুন';
                 let btnHTML = '';
 
                 if (isDone || isLocked) {
-                    btnHTML = `<button class="task-btn completed"><i class="fa-solid fa-clock"></i> Locked</button>`;
+                    btnHTML = `<button class="task-btn completed"><i class="fa-solid fa-clock"></i> লক করা</button>`;
                     statusText = isDone ? 'সম্পন্ন হয়েছে' : '২৪ ঘণ্টার মধ্যে দেখা হয়েছে';
                 } else {
                     btnHTML = `<button class="task-btn" id="btn_${adKey}" onclick="watchAd('${adKey}', '${link}')">Watch Ad</button>`;
@@ -213,7 +228,7 @@
                 btn.style.color = "#aaa";
                 btn.innerText = counter + "s";
             }
-            status.innerText = "অ্যাড দেখা হচ্ছে...";
+            status.innerText = "১০ সেকেন্ড অপেক্ষা করুন...";
 
             let timer = setInterval(() => {
                 counter--;
@@ -230,8 +245,6 @@
             if(!currentUserId) return;
             if(!userCompletedAds.includes(adKey)) {
                 userCompletedAds.push(adKey);
-                
-                // ২৪ ঘণ্টার জন্য বর্তমান সময় সেভ করা হচ্ছে
                 adTimestamps[adKey] = firebase.firestore.Timestamp.now();
 
                 let updateData = { 
@@ -243,11 +256,11 @@
                     let expiryDate = new Date();
                     expiryDate.setHours(expiryDate.getHours() + 24);
                     updateData.premiumUntil = expiryDate;
-                    updateData.completedAds = []; // ৭টি টাস্ক শেষ হলে আবার রিসেট হয়ে যাবে
+                    updateData.completedAds = []; 
                     
                     Swal.fire({
                         title: 'অভিনন্দন!',
-                        text: 'আপনি স্পন্সরদের সাপোর্ট করে ৭টি টাস্ক সফলভাবে সম্পন্ন করেছেন এবং ১ দিনের প্রিমিয়াম লাভ করেছেন!',
+                        text: 'আপনি ৭টি টাস্ক সফলভাবে সম্পন্ন করেছেন এবং ১ দিনের প্রিমিয়াম সুবিধা অর্জন করেছেন!',
                         icon: 'success',
                         background: '#1a1a1a',
                         color: '#fff',
