@@ -3,147 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Watch - HubX Viral</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+    <title>Admin Login - HubX</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <style>
-        .plyr { border-radius: 16px; overflow: hidden; }
-        .chat-bubble { max-width: 80%; padding: 10px 14px; border-radius: 14px; font-size: 13px; margin-bottom: 8px; }
-        .chat-user { background: #ff4500; color: #fff; margin-left: auto; border-bottom-right-radius: 2px; }
-        .chat-admin { background: #222; color: #fff; margin-right: auto; border-bottom-left-radius: 2px; border: 1px solid #333; }
-        .comment-item { border-bottom: 1px solid #1a1a1a; padding-bottom: 12px; margin-bottom: 12px; }
-        .duration-tag { position: absolute; bottom: 6px; right: 6px; background: rgba(0,0,0,0.8); color: #fff; font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
-        .comment-drawer { transform: translateY(100%); transition: transform 0.3s ease-in-out; }
-        .comment-drawer.open { transform: translateY(0); }
-        .info-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #1a1a1a; }
-        .expiry-box-style { background: rgba(234, 179, 8, 0.1); border: 1px dashed rgba(234, 179, 8, 0.3); padding: 10px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+        body{background:#0f0f0f;display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:sans-serif}
+        .login-box{background:#fff;width:90%;max-width:380px;padding:30px;border-radius:20px;box-shadow:0 20px 40px rgba(0,0,0,0.2)}
+        .login-box h2{text-align:center;font-weight:900;margin-bottom:5px}.login-box h2 span{color:#ff0000}
+        .login-box p{text-align:center;color:#888;font-size:13px;margin-bottom:25px}
+        .login-box input{width:100%;padding:13px 15px;border:1px solid #ddd;border-radius:10px;margin-bottom:15px;outline:none;font-size:14px}
+        .login-box input:focus{border-color:#111}
+        #loginBtn{width:100%;padding:13px;background:#111;color:#fff;border:none;border-radius:10px;font-weight:600;cursor:pointer}
+        #errorMsg{color:#ff0000;font-size:12px;text-align:center;margin-top:12px;display:none;background:#ffeaea;padding:8px;border-radius:6px}
     </style>
 </head>
-<body class="bg-[#0b0b0b] text-white font-sans pb-24">
-
-    <!-- Play View -->
-    <div id="play-view" class="space-y-4">
-        <header class="flex justify-between items-center px-4 py-3 bg-[#111] border-b border-gray-900 sticky top-0 z-40">
-            <button onclick="handleBack()" class="w-9 h-9 rounded-full bg-black/40 flex items-center justify-center border border-white/5"><i class="fas fa-arrow-left text-sm"></i></button>
-            <span class="font-black text-sm tracking-wider text-red-500">HUBX <span class="text-white">VIRAL</span></span>
-            <div id="top-user-icon" onclick="switchTab('profile')" class="w-9 h-9 rounded-full bg-gray-800 overflow-hidden border border-white/10 flex items-center justify-center font-bold text-xs">U</div>
-        </header>
-
-        <div class="relative w-full bg-black">
-            <div id="pre-roll-ad" class="absolute inset-0 bg-black/95 z-30 flex flex-col items-center justify-center p-6 text-center" style="display:none;">
-                <div class="bg-red-500/10 border border-red-500/20 rounded-2xl p-6 max-w-xs w-full space-y-3">
-                    <i class="fas fa-bullhorn text-red-500 text-3xl animate-bounce"></i>
-                    <h3 class="font-bold text-sm">সাপোর্ট এড</h3>
-                    <p id="ad-timer-text" class="text-xs text-gray-400">Wait: 10s</p>
-                    <button id="skip-btn" onclick="skipAd()" class="w-full bg-red-600 text-white py-2 rounded-xl text-xs font-bold uppercase" style="display:none;">Skip Ad</button>
-                </div>
-            </div>
-            <video id="player" playsinline controls class="w-full aspect-video">
-                <source src="" type="video/mp4" />
-            </video>
-        </div>
-
-        <div class="px-4 space-y-3">
-            <h1 id="v-title" class="text-base font-bold leading-snug text-gray-100">Loading video...</h1>
-            <div class="flex justify-between items-center text-xs text-gray-400 border-b border-gray-900 pb-3">
-                <span id="v-views">0 Views</span>
-                <div class="flex gap-4">
-                    <button onclick="handleVote('likes')" id="likeBtn" class="flex items-center gap-1.5 hover:text-red-500 transition"><i class="fas fa-thumbs-up"></i> <span id="v-likes">0</span></button>
-                    <button onclick="handleVote('dislikes')" id="dislikeBtn" class="flex items-center gap-1.5 hover:text-red-500 transition"><i class="fas fa-thumbs-down"></i> <span id="v-dislikes">0</span></button>
-                </div>
-            </div>
-
-            <div onclick="toggleComments(true)" class="bg-[#141414] border border-gray-900 rounded-2xl p-4 flex justify-between items-center cursor-pointer">
-                <div class="flex items-center gap-3">
-                    <i class="fas fa-comments text-[#ff4500]"></i>
-                    <div><h4 class="text-xs font-bold">Comments</h4><p class="text-[10px] text-gray-500"><span id="v-comment-count">0</span> comments</p></div>
-                </div>
-                <i class="fas fa-chevron-right text-xs text-gray-600"></i>
-            </div>
-        </div>
-
-        <div class="px-4 mt-6">
-            <h3 class="text-xs font-black uppercase text-gray-500 tracking-wider mb-3">Related Videos</h3>
-            <div id="related-grid" class="space-y-3"></div>
-        </div>
+<body>
+    <div class="login-box">
+        <h2><span>HUBX</span> ADMIN</h2>
+        <p>Only admin can login here</p>
+        <input type="email" id="adminEmail" placeholder="Admin Email">
+        <input type="password" id="adminPass" placeholder="Password">
+        <button id="loginBtn">Login to Dashboard</button>
+        <p id="errorMsg"></p>
     </div>
 
-    <!-- Profile View -->
-    <div id="profile-view" class="hidden px-4 py-6 space-y-6">
-        <div class="bg-[#141414] border border-gray-900 rounded-3xl p-6 text-center space-y-3">
-            <div id="p-avatar-box" class="w-20 h-20 rounded-full bg-gradient-to-tr from-red-600 to-orange-500 mx-auto overflow-hidden flex items-center justify-center text-2xl font-black text-white shadow-xl">U</div>
-            <div>
-                <h2 id="p-name" class="font-black text-lg">Loading...</h2>
-                <p id="p-username" class="text-xs text-gray-500">@username</p>
-            </div>
-            <div class="bg-black/40 border border-gray-800 rounded-2xl p-4 space-y-3">
-                <div class="flex justify-between items-center"><span class="text-[10px] font-bold uppercase text-gray-500">Referral Link</span><span class="text-[9px] bg-green-900/30 text-green-500 px-2 py-1 rounded-md font-bold">Total Ref: <span id="p-ref-count">0</span></span></div>
-                <div class="flex gap-2"><input type="text" id="ref-link" readonly class="flex-1 bg-black border border-gray-800 rounded-lg px-3 py-2 text-[10px] text-gray-400 outline-none"><button onclick="copyRef()" class="bg-green-600 text-white px-4 py-2 rounded-lg text-[10px] font-bold uppercase">Copy</button></div>
-            </div>
-            <div class="space-y-1">
-                <div class="info-row"><span class="text-gray-500 text-[10px] font-bold uppercase">Status</span><span id="p-acc-type" class="text-[#ff4500] text-xs font-black">FREE USER</span></div>
-                <div class="info-row"><span class="text-gray-500 text-[10px] font-bold uppercase">Joined Date</span><span id="p-joined" class="text-gray-400 text-[10px] font-bold italic">--/--/----</span></div>
-                <div id="expiry-box" class="hidden expiry-box-style"><span class="text-yellow-500 text-[10px] font-bold uppercase">Ends In</span><span id="p-expiry-countdown" class="text-yellow-500 text-xs font-black">--</span></div>
-            </div>
-            <button onclick="auth.signOut()" class="w-full mt-8 bg-red-900/10 text-red-500 py-4 rounded-2xl font-black uppercase text-[10px] border border-red-900/20">Logout Account</button>
-        </div>
-    </div>
-
-    <!-- Bottom Navigation -->
-    <nav class="fixed bottom-0 left-0 right-0 bg-black/95 border-t border-gray-900 flex justify-around p-4 z-50">
-        <div onclick="window.location.href='index.html'" class="text-gray-600 cursor-pointer"><i class="fas fa-home text-xl"></i></div>
-        <div id="nav-play" onclick="switchTab('play')" class="text-[#ff4500] cursor-pointer"><i class="fas fa-play-circle text-xl"></i></div>
-        <div id="nav-profile" onclick="switchTab('profile')" class="text-gray-600 cursor-pointer"><i class="fas fa-user-circle text-xl"></i></div>
-    </nav>
-
-    <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
     <script>
-        const firebaseConfig = { apiKey: "AIzaSyDY93jrkGfIntFOA8_M3MCPoRVIuag_ppU", databaseURL: "https://build-realtime-database-default-rtdb.firebaseio.com" };
-        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-        const db = firebase.database(); const auth = firebase.auth();
-        const player = new Plyr('#player');
-        const params = new URLSearchParams(window.location.search);
-        const vUrl = params.get('url'), vTitle = params.get('title');
-        let vId = "", userData = null, activeTab = "play", adCompleted = false;
+        // CONFIG সরাসরি এখানেই - কোনো বাইরের ফাইল লাগবে না
+        const firebaseConfig = {
+          apiKey: "AIzaSyBQu8cmBIEsSBIsvSsvXH3jGYjopWnf5pM",
+          authDomain: "hubx-viral.firebaseapp.com",
+          databaseURL: "https://hubx-viral-default-rtdb.firebaseio.com",
+          projectId: "hubx-viral",
+          storageBucket: "hubx-viral.firebasestorage.app",
+          messagingSenderId: "694752071521",
+          appId: "1:694752071521:web:79603b500368f90070ff20",
+          measurementId: "G-TX4ZP9P6NB"
+        };
+        firebase.initializeApp(firebaseConfig);
 
-        auth.onAuthStateChanged(user => { if (user) { loadProfile(user.uid); findVideo(); } else { window.location.href = "login.html"; } });
+        const emailInput = document.getElementById('adminEmail');
+        const passInput = document.getElementById('adminPass');
+        const loginBtn = document.getElementById('loginBtn');
+        const errorMsg = document.getElementById('errorMsg');
 
-        function loadProfile(uid) {
-            db.ref('users/' + uid).on('value', snap => {
-                userData = snap.val(); if(!userData) return;
-                document.getElementById('p-name').innerText = userData.fullName || "User";
-                document.getElementById('p-username').innerText = "@" + (userData.username || "user");
-                document.getElementById('ref-link').value = `${window.location.origin}/app/signup.html?ref=${uid}`;
-                document.getElementById('p-ref-count').innerText = userData.referralCount || 0;
-                document.getElementById('p-joined').innerText = userData.joinedDate || "25/04/2026";
-                const accType = userData.accountType || "FREE";
-                document.getElementById('p-acc-type').innerText = accType + " USER";
-                const exBox = document.getElementById('expiry-box');
-                if(accType === "PREMIUM" && userData.expiryTimestamp) {
-                    exBox.classList.remove('hidden');
-                    const diff = userData.expiryTimestamp - Date.now();
-                    document.getElementById('p-expiry-countdown').innerText = diff > 0 ? Math.ceil(diff / (1000 * 60 * 60 * 24)) + " Days" : "Expired";
-                } else { exBox.classList.add('hidden'); }
-                if(userData.profilePic) { const img = `<img src="${userData.profilePic}" class="w-full h-full object-cover">`; document.getElementById('p-avatar-box').innerHTML = img; document.getElementById('top-user-icon').innerHTML = img; }
-            });
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) checkAdmin(user.uid);
+        });
+
+        loginBtn.addEventListener('click', () => {
+            const email = emailInput.value.trim();
+            const pass = passInput.value.trim();
+            if (!email || !pass) return showError("Email & Password লিখো");
+            loginBtn.innerText = "Checking..."; loginBtn.disabled = true; errorMsg.style.display="none";
+            firebase.auth().signInWithEmailAndPassword(email, pass)
+                .then(cred => checkAdmin(cred.user.uid))
+                .catch(err => { showError(err.message); resetBtn(); });
+        });
+
+        function checkAdmin(uid) {
+            firebase.firestore().collection('admins').doc(uid).get()
+                .then(doc => {
+                    if (doc.exists && doc.data().role === "admin") {
+                        window.location.href = "admin-dashboard.html";
+                    } else {
+                        firebase.auth().signOut();
+                        showError("তুমি Admin না!");
+                        resetBtn();
+                    }
+                }).catch((e) => { console.log(e); showError("Rules Error: "+e.message); resetBtn(); });
         }
-
-        async function handleVote(type) { if (!vId || !auth.currentUser) return; const voteRef = db.ref(`video_votes/${vId}/${auth.currentUser.uid}`); const snap = await voteRef.once('value'); const ex = snap.val(); if (ex === type) { await voteRef.remove(); db.ref(`videos/${vId}/${type}`).transaction(c => (c || 1) - 1); } else { if(ex) db.ref(`videos/${vId}/${ex}`).transaction(c => (c || 1) - 1); await voteRef.set(type); db.ref(`videos/${vId}/${type}`).transaction(c => (c || 0) + 1); } }
-        function listenVotes() { db.ref(`videos/${vId}`).on('value', snap => { const d = snap.val(); if(!d) return; document.getElementById('v-likes').innerText = d.likes || 0; document.getElementById('v-dislikes').innerText = d.dislikes || 0; }); db.ref(`video_votes/${vId}/${auth.currentUser.uid}`).on('value', snap => { const v = snap.val(); document.getElementById('likeBtn').classList.toggle('text-red-500', v === 'likes'); document.getElementById('dislikeBtn').classList.toggle('text-red-500', v === 'dislikes'); }); }
-        
-        function findVideo() { db.ref('videos').once('value', snap => { snap.forEach(child => { const d = child.val(); if(d.title === vTitle) { vId = child.key; document.getElementById('v-title').innerText = d.title; document.getElementById('v-views').innerText = (d.views || 0) + " Views"; player.source = { type: 'video', sources: [{src: vUrl, type: 'video/mp4'}] }; listenVotes(); loadRelated(d.category); db.ref(`videos/${vId}/views`).transaction(c => (c || 0) + 1); } }); }); }
-        function skipAd() { document.getElementById('pre-roll-ad').style.display = 'none'; adCompleted = true; player.play(); }
-        function loadRelated(cat) { db.ref('videos').orderByChild('category').equalTo(cat).limitToLast(10).once('value', snap => { const grid = document.getElementById('related-grid'); grid.innerHTML = ""; snap.forEach(c => { const v = c.val(); if(v.title !== vTitle) grid.innerHTML += `<div class="flex gap-3 p-2 bg-[#141414] rounded-xl border border-gray-900 cursor-pointer" onclick="location.href='play.html?url=${encodeURIComponent(v.video_url)}&title=${encodeURIComponent(v.title)}'"><div class="relative w-28 h-16 flex-shrink-0"><img src="${v.thumbnail}" class="w-full h-full object-cover rounded-lg"><span class="duration-tag">${v.duration || '00:00'}</span></div><div class="flex flex-col justify-center overflow-hidden"><h3 class="text-[11px] font-bold line-clamp-2">${v.title}</h3><span class="text-[9px] text-red-500 uppercase mt-1">${v.views || 0} Views</span></div></div>`; }); }); }
-        function switchTab(t) { activeTab = t; ['play-view', 'profile-view'].forEach(v => document.getElementById(v).classList.add('hidden')); document.getElementById(t + '-view').classList.remove('hidden'); document.querySelectorAll('nav div').forEach(el => el.classList.replace('text-[#ff4500]', 'text-gray-600')); document.getElementById('nav-' + (t==='play'?'play':'profile')).classList.replace('text-gray-600', 'text-[#ff4500]'); }
-        function handleBack() { activeTab === "play" ? window.location.href = 'index.html' : switchTab('play'); }
-        function copyRef() { const copyText = document.getElementById("ref-link"); copyText.select(); navigator.clipboard.writeText(copyText.value); alert("Referral link copied!"); }
-        
-        player.on('play', () => { if (!adCompleted) { player.pause(); document.getElementById('pre-roll-ad').style.display='flex'; let tl=10; const ti=setInterval(()=>{tl--;document.getElementById('ad-timer-text').innerText=`Wait: ${tl}s`;if(tl<=0){clearInterval(ti);document.getElementById('skip-btn').style.display='block';}},1000); } });
+        function showError(m){errorMsg.style.display="block"; errorMsg.innerText=m;}
+        function resetBtn(){loginBtn.innerText="Login to Dashboard"; loginBtn.disabled=false;}
     </script>
 </body>
-                    </html>
-                    
+</html>
