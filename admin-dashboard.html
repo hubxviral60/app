@@ -8,7 +8,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
         *{margin:0;padding:0;box-sizing:border-box;font-family:Inter,sans-serif}
         body{background:#f5f5f7;color:#111; display:none;}
@@ -82,12 +81,12 @@
         });
 
         function loadStats() {
-            // ভিডিওর সংখ্যা রিয়েলটাইম ডাটাবেস থেকে লোড হবে
-            firebase.database().ref('videos').on('value', snap => {
-                document.getElementById('totalVideos').innerText = snap.numChildren();
+            // ভিডিওর সংখ্যা ফায়ারস্টোর (Firestore) এর 'videos' কালেকশন থেকে রিয়েলটাইমে লোড হবে
+            db.collection('videos').onSnapshot(snapshot => {
+                document.getElementById('totalVideos').innerText = snapshot.size;
             });
 
-            // ইউজার এবং প্রিমিয়াম ইউজারের সংখ্যা ফায়ারস্টোর (Firestore) থেকে রিয়েলটাইমে লোড হবে
+            // ইউজার এবং প্রিমিয়াম ইউজারের সংখ্যা ফায়ারস্টোর থেকে রিয়েলটাইমে লোড হবে
             db.collection('users').onSnapshot(snapshot => {
                 let total = snapshot.size;
                 let premium = 0;
@@ -97,7 +96,6 @@
                     const u = doc.data();
                     let isPremium = false;
 
-                    // ইউজার മാനേജ്মেন্ট পেজের লজিক অনুযায়ী সময় চেক করা হলো
                     if (u.premiumUntil) {
                         const expiry = u.premiumUntil.toDate ? u.premiumUntil.toDate() : new Date(u.premiumUntil);
                         if (expiry > now) {
