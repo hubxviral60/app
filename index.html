@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-    <meta name="6a97888e-site-verification" content="ff200df4385d55219277c3b4aeee6266">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HubX Viral</title>
@@ -180,19 +179,16 @@
         let currentPage = 1;
         const videosPerPage = 10;
 
+        // ইউজার লগইন করা না থাকলে সরাসরি login.html এ রিডাইরেক্ট করবে
         auth.onAuthStateChanged((user) => {
             if (user && !user.isAnonymous) {
                 currentUserId = user.uid;
                 checkUserSubscription();
                 listenToWishlist();
+                loadVideos();
             } else {
-                currentUserId = null;
-                userWishlist = [];
-                isUserPremium = false;
-                document.getElementById('premiumStatus').innerHTML = `<i class="fa-solid fa-lock"></i> Guest User`;
-                document.getElementById('premiumStatus').style.background = "#272727";
+                window.location.href = "login.html";
             }
-            loadVideos();
         });
 
         function checkUserSubscription() {
@@ -293,22 +289,7 @@
             event.stopPropagation();
             
             if (!currentUserId) {
-                Swal.fire({
-                    title: 'লগইন প্রয়োজন!',
-                    text: 'উইশলিস্টে ভিডিও যুক্ত করতে হলে আপনাকে প্রথমে লগইন করতে হবে।',
-                    icon: 'warning',
-                    background: '#1a1a1a',
-                    color: '#fff',
-                    confirmButtonColor: '#ff0000',
-                    confirmButtonText: 'লগইন করুন',
-                    showCancelButton: true,
-                    cancelButtonText: 'বাতিল',
-                    cancelButtonColor: '#333'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        location.href = "login.html";
-                    }
-                });
+                window.location.href = "login.html";
                 return;
             }
 
@@ -326,9 +307,7 @@
             }
         }
 
-        // নেটিভ অ্যাড রিলোড করার জন্য ফাংশন
         function loadNativeAdScript() {
-            // যদি পূর্বে কোনো অ্যাড স্ক্রিপ্ট থেকে থাকে তা রিমুভ করে নতুন করে লোড করা হবে
             const oldScript = document.getElementById('dynamicAdScript');
             if (oldScript) {
                 oldScript.remove();
@@ -393,7 +372,6 @@
                     </div>
                 `;
 
-                // ফিডের মাঝে (যেমন প্রতি ৪টি ভিডিওর পর) নেটিভ অ্যাড ব্লক ইনজেক্ট করার জন্য
                 if (index === 3) {
                     html += `
                         <div class="native-ad-card">
@@ -414,7 +392,6 @@
                 paginationContainer.style.display = 'none';
             }
 
-            // ভিডিও রেন্ডার হওয়ার পর অ্যাড স্ক্রিপ্ট কল করা যাতে অ্যাড শো করে
             setTimeout(loadNativeAdScript, 300);
         }
 
