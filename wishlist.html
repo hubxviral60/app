@@ -93,7 +93,6 @@
         const db = firebase.firestore();
         const auth = firebase.auth();
 
-        // লগইন স্ট্যাটাস ব্রাউজারে স্থায়ীভাবে ধরে রাখার জন্য পার্সিস্টেন্স সেট করা হলো
         auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
             .catch((error) => {
                 console.error("Persistence error:", error);
@@ -105,25 +104,14 @@
         let allVideosMap = {};
         let wishlistUnsubscribe = null;
 
-        // ফায়ারবেস অথ স্টেট ট্র্যাক করা
+        // ইউজার লগইন করা না থাকলে সরাসরি login.html এ রিডাইরেক্ট করবে
         auth.onAuthStateChanged((user) => {
             if (user && !user.isAnonymous) {
                 currentUserId = user.uid;
                 checkUserSubscription();
                 loadWishlistAndVideos();
             } else {
-                currentUserId = null;
-                isUserPremium = false;
-                wishlistVideoIds = [];
-                if (wishlistUnsubscribe) wishlistUnsubscribe();
-                
-                document.getElementById('premiumStatus').innerHTML = `<i class="fa-solid fa-lock"></i> Login Required`;
-                document.getElementById('videoFeed').innerHTML = `
-                    <div style="text-align:center; padding:50px 20px;">
-                        <p style="color:#aaa; font-size:15px; margin-bottom:15px;">আপনার উইশলিস্ট দেখতে দয়া করে লগইন করুন।</p>
-                        <a href="login.html" style="background:#ff0000; color:#fff; padding:10px 20px; border-radius:8px; text-decoration:none; font-weight:600;">লগইন করুন</a>
-                    </div>
-                `;
+                window.location.href = "login.html";
             }
         });
 
@@ -157,7 +145,6 @@
                     allVideosMap[doc.id] = { id: doc.id, ...doc.data() };
                 });
 
-                // ইউজারের উইশলিস্ট লাইভ ট্র্যাক করা
                 if (wishlistUnsubscribe) wishlistUnsubscribe();
                 
                 wishlistUnsubscribe = db.collection("users").doc(currentUserId).collection("wishlist")
@@ -175,10 +162,8 @@
         }
 
         // ভিডিও লিংকে ক্লিক করার ফাংশন
-        function handleVideoClick(videoId) {
-            if (isUserPremium) {
-                location.href = `watch.html?id=${videoId}`;
-            } else {
+        function handleVideoClick(videoId, isVideoPremium) {
+            if (isVideoPremium && !isUserPremium) {
                 Swal.fire({
                     title: 'প্রিমিয়াম লক করা আছে!',
                     text: 'এই ভিডিওটি দেখতে হলে স্পন্সরদের সাপোর্ট করে ১ দিনের প্রিমিয়াম আনলক করুন।',
@@ -195,6 +180,8 @@
                         location.href = "task.html";
                     }
                 });
+            } else {
+                location.href = `watch.html?id=${videoId}`;
             }
         }
 
@@ -225,12 +212,12 @@
                 if (v) {
                     html += `
                         <div class="video-card">
-                            <div class="thumbnail-container" onclick="handleVideoClick('${v.id}')">
+                            <div class="thumbnail-container" onclick="handleVideoClick('${v.id}', ${v.isPremium || false})">
                                 <img src="${v.thumbnail || 'https://via.placeholder.com/640x360'}" alt="Thumbnail">
                                 <span class="duration">${v.duration || '0:00'}</span>
                             </div>
                             <div class="video-details-box">
-                                <div class="video-text-info" onclick="handleVideoClick('${v.id}')">
+                                <div class="video-text-info" onclick="handleVideoClick('${v.id}', ${v.isPremium || false})">
                                     <h3 class="video-title">${v.title}</h3>
                                     <div class="video-meta">
                                         <span>${v.category || 'General'}</span> • 
@@ -250,7 +237,5 @@
             videoFeed.innerHTML = html;
         }
     </script>
-    <script src="https://unsettledradiator.com/bb/af/62/bbaf623bd005ed758480b20d81e44d2c.js"></script>
-    
 </body>
 </html>
