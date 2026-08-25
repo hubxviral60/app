@@ -152,7 +152,7 @@
         const urlParams = new URLSearchParams(window.location.search);
         const videoId = urlParams.get('id');
 
-        // ইউজার অথেন্টিকেশন এবং সাবস্ক্রিপশন চেক
+        // ইউজার লগইন করা না থাকলে সরাসরি login.html এ রিডাইরেক্ট করবে
         auth.onAuthStateChanged((user) => {
             if (user && !user.isAnonymous) {
                 currentUserId = user.uid;
@@ -163,9 +163,7 @@
                     }
                 });
             } else {
-                currentUserId = null;
-                isUserPremium = false;
-                handleUnauthorizedAccess("ভিডিও দেখতে হলে আপনাকে প্রথমে টাস্ক কমপ্লিট করে প্রিমিয়াম আনলক করতে হবে অথবা লগইন করতে হবে।");
+                window.location.href = "login.html";
             }
         });
 
@@ -218,7 +216,8 @@
                 if(doc.exists) {
                     videoDetails = doc.data();
                     
-                    if (!isUserPremium) {
+                    // যদি ভিডিওটি প্রিমিয়াম হয় এবং ইউজারের প্রিমিয়াম সক্রিয় না থাকে
+                    if (videoDetails.isPremium && !isUserPremium) {
                         handleUnauthorizedAccess("এই ভিডিওটি দেখতে হলে আপনাকে অবশ্যই টাস্ক কমপ্লিট করে প্রিমিয়াম টাইম একটিভ করতে হবে।");
                         return;
                     }
