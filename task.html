@@ -116,22 +116,14 @@
         let adTimestamps = {};
         let userUnsubscribe = null;
 
+        // ইউজার লগইন করা না থাকলে সরাসরি login.html এ রিডাইরেক্ট করবে
         auth.onAuthStateChanged((user) => {
             if (user && !user.isAnonymous) {
                 currentUserId = user.uid;
                 loadAdLinks();
                 listenUserData();
             } else {
-                currentUserId = null;
-                if(userUnsubscribe) userUnsubscribe();
-                
-                document.getElementById('premiumStatusText').innerHTML = `লগইন প্রয়োজন`;
-                document.getElementById('taskList').innerHTML = `
-                    <div style="text-align:center; padding:30px 20px;">
-                        <p style="color:#aaa; font-size:14px; margin-bottom:12px;">টাস্ক সম্পন্ন করতে এবং প্রিমিয়াম পেতে দয়া করে লগইন করুন।</p>
-                        <a href="login.html" style="background:#ff0000; color:#fff; padding:10px 20px; border-radius:8px; text-decoration:none; font-weight:600; display:inline-block;">লগইন করুন</a>
-                    </div>
-                `;
+                window.location.href = "login.html";
             }
         });
 
