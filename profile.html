@@ -53,16 +53,8 @@
     </header>
 
     <div class="profile-container">
-        <!-- যদি লগইন করা না থাকে তবে এই কার্ড দেখাবে এবং লগইন বাটন থাকবে -->
-        <div id="loginPromptCard" class="profile-card" style="display: none;">
-            <div class="profile-avatar"><i class="fa-solid fa-user-slash"></i></div>
-            <h2 class="profile-title">লগইন করা নেই!</h2>
-            <p style="color:#aaa; font-size:14px; margin-bottom:15px;">আপনার অ্যাকাউন্ট এবং প্রিমিয়াম স্ট্যাটাস দেখতে দয়া করে লগইন করুন।</p>
-            <a href="login.html" class="action-btn btn-primary"><i class="fa-solid fa-right-to-bracket" style="margin-right:6px;"></i> লগইন করুন</a>
-        </div>
-
         <!-- লগইন করা থাকলে এই প্রোফাইল কার্ড এবং লগআউট বাটন দেখাবে -->
-        <div id="userProfileCard" class="profile-card" style="display: none;">
+        <div id="userProfileCard" class="profile-card">
             <div class="profile-avatar"><i class="fa-solid fa-user"></i></div>
             <h2 class="profile-title" id="userNameText">ইউজার অ্যাকাউন্ট</h2>
             <div class="profile-uid" id="userUidText">UID: Loading...</div>
@@ -128,26 +120,20 @@
         const db = firebase.firestore();
         const auth = firebase.auth();
 
-        // লগইন স্ট্যাটাস ব্রাউজারে স্থায়ীভাবে ধরে রাখার জন্য পার্সিস্টেন্স সেট করা হলো
         auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
             .catch((error) => {
                 console.error("Persistence error:", error);
             });
 
-        // ফায়ারবেস অথ স্টেট চেঞ্জ ট্র্যাক করা
+        // ইউজার লগইন করা না থাকলে সরাসরি login.html এ রিডাইরেক্ট করবে
         auth.onAuthStateChanged((user) => {
             if (user && !user.isAnonymous) {
-                document.getElementById('loginPromptCard').style.display = 'none';
-                document.getElementById('userProfileCard').style.display = 'block';
-                
                 document.getElementById('userUidText').innerText = `UID: ${user.uid}`;
                 document.getElementById('userNameText').innerText = user.displayName || user.email || "ইউজার";
 
                 loadUserData(user.uid);
             } else {
-                document.getElementById('userProfileCard').style.display = 'none';
-                document.getElementById('loginPromptCard').style.display = 'block';
-                document.getElementById('premiumStatusHead').innerHTML = `<i class="fa-solid fa-lock"></i> Login Required`;
+                window.location.href = "login.html";
             }
         });
 
@@ -175,7 +161,6 @@
                         document.getElementById('premiumExpiryVal').innerText = "প্রযোজ্য নয়";
                     }
 
-                    // completedAds অথবা completedTasks উভয় ফিল্ড হ্যান্ডেল করার লজিক
                     let completedCount = 0;
                     if (data.completedAds && Array.isArray(data.completedAds)) {
                         completedCount = data.completedAds.length;
@@ -212,7 +197,5 @@
             });
         }
     </script>
-    <script src="https://unsettledradiator.com/bb/af/62/bbaf623bd005ed758480b20d81e44d2c.js"></script>
-    
 </body>
 </html>
